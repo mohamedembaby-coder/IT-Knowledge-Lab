@@ -6,7 +6,7 @@
 function Initialize-KnowledgeLab {
 
     Write-Host ""
-    Write-Host "Initializing IT Knowledge Lab..." -ForegroundColor Cyan
+    Write-KLLog -Message "Initializing IT Knowledge Lab..." -Level Info
 
 }
 

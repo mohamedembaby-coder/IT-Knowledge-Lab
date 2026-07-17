@@ -18,7 +18,7 @@ function New-KLFolder {
 
     if (-not (Test-Path $Path)) {
         New-Item -ItemType Directory -Path $Path | Out-Null
-        Write-Host "[Created] $Path" -ForegroundColor Green
+        Write-KLLog -Message "[Created] $Path" -Level Success
     }
     else {
         Write-Host "[Exists ] $Path" -ForegroundColor DarkGray

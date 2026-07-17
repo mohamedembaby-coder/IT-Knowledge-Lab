@@ -30,17 +30,17 @@ Import-Module "$PSScriptRoot\Modules\Logger.psm1" -Force
 
 try {
 
-    Write-Host "Loading configuration..." -ForegroundColor Yellow
+    Write-KLLog -Message "Loading configuration..." -Level Info
 
     $config = Get-KLConfiguration
 
-    Write-Host "Configuration loaded successfully." -ForegroundColor Green
+    Write-KLLog -Message "Configuration loaded successfully." -Level Success
 
 }
 catch {
 
     Write-Host ""
-    Write-Host "ERROR: $($_.Exception.Message)" -ForegroundColor Red
+    Write-KLLog -Message "ERROR: $($_.Exception.Message)" -Level Error
     exit
 
 }
