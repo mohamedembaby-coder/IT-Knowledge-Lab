@@ -21,6 +21,7 @@ Import-Module "$PSScriptRoot\Modules\ProjectInitializer.psm1" -Force
 Import-Module "$PSScriptRoot\Modules\FolderGenerator.psm1" -Force
 Import-Module "$PSScriptRoot\Modules\FileGenerator.psm1" -Force
 Import-Module "$PSScriptRoot\Modules\TemplateManager.psm1" -Force
+Import-Module "$PSScriptRoot\Modules\RepositoryGenerator.psm1" -Force
 
 # ==========================================
 # Load Configuration
@@ -28,13 +29,17 @@ Import-Module "$PSScriptRoot\Modules\TemplateManager.psm1" -Force
 
 try {
 
+    Write-Host "Loading configuration..." -ForegroundColor Yellow
+
     $config = Get-KLConfiguration
+
+    Write-Host "Configuration loaded successfully." -ForegroundColor Green
 
 }
 catch {
 
     Write-Host ""
-    Write-Host "ERROR: $_" -ForegroundColor Red
+    Write-Host "ERROR: $($_.Exception.Message)" -ForegroundColor Red
     exit
 
 }
@@ -45,58 +50,20 @@ catch {
 
 Initialize-KnowledgeLab
 
-Write-Host ""
-Write-Host "Creating Repository Structure..." -ForegroundColor Cyan
-Write-Host ""
-
 # ==========================================
-# Generate Categories
+# Generate Repository
 # ==========================================
 
-foreach ($category in $config.categories.PSObject.Properties.Name)
-{
-
-    $categoryPath = Join-Path $PSScriptRoot $category
-
-    New-KLFolder -Path $categoryPath
-
-    foreach ($topic in $config.categories.$category)
-    {
-
-        $topicPath = Join-Path $categoryPath $topic
-
-        New-KLFolder -Path $topicPath
-
-        foreach ($subfolder in $config.subfolders)
-        {
-
-            New-KLFolder -Path (Join-Path $topicPath $subfolder)
-
-        }
-
-        foreach ($file in $config.lessonFiles)
-        {
-
-            New-KLFile -Path (Join-Path $topicPath $file)
-
-        }
-
-        Copy-KLTemplates `
-            -TemplatePath "$PSScriptRoot\Templates" `
-            -DestinationPath $topicPath
-
-    }
-
-}
+New-KLRepository `
+    -Config $config `
+    -RootPath $PSScriptRoot
 
 # ==========================================
-# Summary
+# Finished
 # ==========================================
 
 Write-Host ""
-Write-Host "==========================================" -ForegroundColor Green
-Write-Host "Repository : $($config.repository.name)" -ForegroundColor Green
-Write-Host "Author     : $($config.repository.author)" -ForegroundColor Green
-Write-Host "Status     : Completed Successfully" -ForegroundColor Green
-Write-Host "==========================================" -ForegroundColor Green
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "        Process Completed Successfully"
+Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host ""
