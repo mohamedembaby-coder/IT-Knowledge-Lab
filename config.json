@@ -1,0 +1,163 @@
+{
+  "repository": {
+    "name": "IT-Knowledge-Lab",
+    "author": "Mohamed Embaby",
+    "language": [
+      "English",
+      "Arabic"
+    ]
+  },
+
+  "subfolders": [
+    "diagrams",
+    "images",
+    "files",
+    "labs",
+    "references",
+    "resources",
+    "scripts"
+  ],
+
+  "lessonFiles": [
+    "README.md",
+    "commands.md",
+    "cheatsheet.md",
+    "notes.md",
+    "troubleshooting.md",
+    "lab-guide.md"
+  ],
+
+  "categories": {
+    "01-Networking": [
+      "01-Fundamentals",
+      "02-OSI-Model",
+      "03-TCP-IP-Model",
+      "04-IP-Addressing",
+      "05-Subnetting-VLSM",
+      "06-Switching",
+      "07-VLAN-Trunking",
+      "08-STP",
+      "09-Routing",
+      "10-DHCP",
+      "11-DNS",
+      "12-NAT-PAT",
+      "13-WAN-Technologies",
+      "14-Network-Security",
+      "15-Wireshark",
+      "16-Network-Troubleshooting",
+      "17-CCNA-Exam-Prep"
+    ],
+
+    "02-Windows": [
+      "01-Windows-Server-Installation",
+      "02-Active-Directory",
+      "03-DNS",
+      "04-DHCP",
+      "05-File-Server",
+      "06-Print-Server",
+      "07-Group-Policy",
+      "08-PowerShell",
+      "09-WSUS",
+      "10-Hyper-V",
+      "11-Remote-Desktop",
+      "12-Windows-Security",
+      "13-MCSA-Exam-Prep"
+    ],
+
+    "03-Linux": [
+      "01-Ubuntu",
+      "02-Rocky-Linux",
+      "03-CentOS",
+      "04-SSH",
+      "05-Users-and-Permissions",
+      "06-Systemd-Services",
+      "07-Networking",
+      "08-Bash-Scripting"
+    ],
+
+    "04-Microsoft365": [
+      "01-Exchange-Online",
+      "02-SharePoint",
+      "03-OneDrive",
+      "04-Teams",
+      "05-Entra-ID",
+      "06-Intune",
+      "07-Microsoft-Defender",
+      "08-Purview",
+      "09-Compliance",
+      "10-Microsoft365-Administration"
+    ],
+
+    "05-Azure": [
+      "01-Virtual-Machines",
+      "02-Storage",
+      "03-Networking",
+      "04-Entra-ID",
+      "05-Backup-DR",
+      "06-Azure-Monitor",
+      "07-Azure-Security"
+    ],
+
+    "06-Virtualization": [
+      "01-VMware-ESXi",
+      "02-vCenter",
+      "03-Hyper-V",
+      "04-Veeam",
+      "05-QNAP"
+    ],
+
+    "07-Security": [
+      "01-Security-Fundamentals",
+      "02-ISC2-CC",
+      "03-Google-Cybersecurity",
+      "04-SOC",
+      "05-Incident-Response",
+      "06-Threat-Hunting",
+      "07-Digital-Forensics",
+      "08-Vulnerability-Management",
+      "09-Penetration-Testing",
+      "10-CEH-Prep"
+    ],
+
+    "08-Firewall": [
+      "01-Firewall-Fundamentals",
+      "02-FortiGate-Installation",
+      "03-Interfaces",
+      "04-Routing",
+      "05-Policies",
+      "06-NAT",
+      "07-VPN",
+      "08-Web-Filter",
+      "09-Application-Control",
+      "10-SSL-Inspection",
+      "11-HA",
+      "12-Logging",
+      "13-Troubleshooting"
+    ],
+
+    "09-Scripting": [
+      "01-PowerShell",
+      "02-Batch",
+      "03-Python",
+      "04-Automation"
+    ],
+
+    "10-Cloud": [
+      "01-AWS",
+      "02-Azure",
+      "03-Google-Cloud",
+      "04-Hybrid-Cloud"
+    ],
+
+    "11-Projects": [
+      "01-Enterprise-Network",
+      "02-Windows-Domain",
+      "03-FortiGate-Deployment",
+      "04-Azure-Migration",
+      "05-Veeam-Backup",
+      "06-Microsoft365-Deployment"
+    ],
+
+    "12-Documentation": []
+  }
+}
