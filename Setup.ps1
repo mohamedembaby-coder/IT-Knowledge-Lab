@@ -22,6 +22,7 @@ Import-Module "$PSScriptRoot\Modules\FolderGenerator.psm1" -Force
 Import-Module "$PSScriptRoot\Modules\FileGenerator.psm1" -Force
 Import-Module "$PSScriptRoot\Modules\TemplateManager.psm1" -Force
 Import-Module "$PSScriptRoot\Modules\RepositoryGenerator.psm1" -Force
+Import-Module "$PSScriptRoot\Modules\Logger.psm1" -Force
 
 # ==========================================
 # Load Configuration

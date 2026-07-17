@@ -1,5 +1,18 @@
+# ==========================================
+# FileGenerator Module
+# IT Knowledge Lab
+# ==========================================
+
 function New-KLFile {
+    <#
+    .SYNOPSIS
+    Creates a file if it doesn't exist
+    
+    .PARAMETER Path
+    Full path to the file to create
+    #>
     param(
+        [Parameter(Mandatory=$true)]
         [string]$Path
     )
 
@@ -8,7 +21,7 @@ function New-KLFile {
         Write-Host "[Created] $Path" -ForegroundColor Cyan
     }
     else {
-        Write-Host "[Exists ] $Path" -ForegroundColor DarkYellow
+        Write-Host "[Exists ] $Path" -ForegroundColor DarkGray
     }
 }
 
