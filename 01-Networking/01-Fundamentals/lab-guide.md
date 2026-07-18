@@ -1,62 +1,240 @@
-# Lab Guide
+# 🧪 Networking Fundamentals Lab Guide
+
+> Practical hands-on labs to practice Networking Fundamentals.
+
+---
+
+# 📋 Lab Objectives
+
+After completing these labs, you will be able to:
+
+- Identify your network configuration.
+- Test connectivity.
+- Understand IP addressing.
+- Use common networking commands.
+- Troubleshoot simple network problems.
+
+---
+
+# 💻 Lab 1 – View Your Network Information
 
 ## Objective
 
-Build a simple small-office (SOHO) network topology in Cisco Packet Tracer, identify each device's role, and verify end-to-end connectivity using the commands from `commands.md`.
+Display your computer's network configuration.
 
 ---
 
-## Requirements
+## Windows
 
-- Hardware: (Simulated) 1 Router, 1 Switch, 3 PCs
-- Software: Cisco Packet Tracer (free from Cisco NetAcad)
-- Network: A single LAN segment, e.g., 192.168.1.0/24
+Open **Command Prompt** and run:
 
----
+```cmd
+ipconfig
+```
 
-## Steps
+### Expected Output
 
-1. Open Packet Tracer and place 1 Router, 1 Switch, and 3 PCs on the canvas.
-2. Connect PC1, PC2, and PC3 to the Switch using **Copper Straight-Through** cables.
-3. Connect the Switch to the Router using a **Copper Straight-Through** cable (Auto-MDIX handles it automatically on modern devices).
-4. Assign static IPs to each PC: PC1 = 192.168.1.10, PC2 = 192.168.1.11, PC3 = 192.168.1.12, all with subnet mask 255.255.255.0 and default gateway 192.168.1.1.
-5. Configure the router's interface (e.g., `g0/0`) with IP 192.168.1.1/24 and bring it up (`no shutdown`).
+- IPv4 Address
+- Subnet Mask
+- Default Gateway
 
 ---
 
-## Verification
+For detailed information:
 
-- From PC1, `ping 192.168.1.11` (PC2) → should succeed (same LAN, via switch).
-- From PC1, `ping 192.168.1.1` (Router) → should succeed.
-- From PC1, `arp -a` → should show the MAC addresses of the Router and PC2 after pinging them.
-- Check the link lights (green) on all cable connections in Packet Tracer — a red X icon means the physical link is down (wrong cable type or port shut down).
+```cmd
+ipconfig /all
+```
 
----
+You will also see:
 
-## Cleanup
-
-- If this is a shared/reused lab file, remove any test static IPs before saving as a template for the next lab.
-- Save the `.pkt` file inside `labs/` for future reference.
-
+- MAC Address
+- DNS Servers
+- DHCP Status
+- Adapter Name
 
 ---
-
-# Lab 1 - Verify Basic Connectivity
-
-## Objective
-Learn basic connectivity testing.
-
-## Steps
-
-1. Open Command Prompt.
-2. Run `ipconfig /all`
-3. Identify IPv4, Gateway and DNS.
-4. Ping your gateway.
-5. Ping 8.8.8.8.
-6. Ping google.com.
-7. Compare the results.
 
 ## Questions
 
-- Why can IP ping succeed while DNS ping fails?
-- What happens if the default gateway is missing?
+- What is your IPv4 Address?
+- What is your Default Gateway?
+- Is DHCP Enabled?
+
+---
+
+# 🏓 Lab 2 – Test Network Connectivity
+
+## Objective
+
+Verify that another device is reachable.
+
+Run:
+
+```cmd
+ping 8.8.8.8
+```
+
+Expected result:
+
+```text
+Reply from 8.8.8.8
+```
+
+---
+
+Now test DNS:
+
+```cmd
+ping google.com
+```
+
+---
+
+## Discussion
+
+If the IP works but the domain name fails, the issue is probably related to **DNS**.
+
+---
+
+# 🌍 Lab 3 – Discover Your Public IP
+
+Open a browser and visit:
+
+https://whatismyipaddress.com
+
+Compare it with your local IP address.
+
+### Questions
+
+- What is your Private IP?
+- What is your Public IP?
+- Why are they different?
+
+---
+
+# 🧭 Lab 4 – Trace the Route
+
+Run:
+
+```cmd
+tracert google.com
+```
+
+Observe:
+
+- Number of hops
+- Response time
+- Final destination
+
+---
+
+# 🔍 Lab 5 – DNS Lookup
+
+Run:
+
+```cmd
+nslookup google.com
+```
+
+Observe:
+
+- DNS Server
+- Resolved IP Address
+
+---
+
+# 📡 Lab 6 – Display ARP Cache
+
+Run:
+
+```cmd
+arp -a
+```
+
+Observe:
+
+- IP Address
+- MAC Address
+- Interface
+
+---
+
+# 🌐 Lab 7 – Display Active Connections
+
+Run:
+
+```cmd
+netstat -an
+```
+
+Observe:
+
+- Local Address
+- Remote Address
+- Listening Ports
+- Established Connections
+
+---
+
+# 🔥 Lab 8 – Simulate a Network Problem
+
+Disconnect the network cable (or disable Wi-Fi).
+
+Run:
+
+```cmd
+ping 8.8.8.8
+```
+
+Reconnect the cable.
+
+Run the command again.
+
+### Observe
+
+How does the output change?
+
+---
+
+# 📊 Lab Checklist
+
+| Task | Completed |
+|-------|-----------|
+| View IP Configuration | ☐ |
+| View Detailed Configuration | ☐ |
+| Ping Local Network | ☐ |
+| Ping Internet | ☐ |
+| Trace Route | ☐ |
+| DNS Lookup | ☐ |
+| View ARP Cache | ☐ |
+| View Active Connections | ☐ |
+
+---
+
+# 💡 Best Practices
+
+- Always verify physical connections first.
+- Check the IP configuration before troubleshooting.
+- Test connectivity using both IP addresses and domain names.
+- Record command outputs while troubleshooting.
+- Start with simple checks before assuming complex failures.
+
+---
+
+# 🎯 Challenge
+
+Answer the following:
+
+1. What is your IPv4 Address?
+2. What is your Default Gateway?
+3. What DNS Server are you using?
+4. What is your MAC Address?
+5. Can you successfully ping 8.8.8.8?
+6. How many hops does `tracert google.com` show?
+
+---
+
+🎉 Congratulations!
+
+You have completed the Networking Fundamentals Lab.
