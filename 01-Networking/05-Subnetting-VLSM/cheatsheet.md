@@ -1,22 +1,3 @@
-# Cheat Sheet
+# Cheatsheet
 
-## Important Commands
-
-| Command | Description |
-|----------|-------------|
-| | |
-
----
-
-## Ports
-
-| Port | Protocol | Service |
-|------|----------|---------|
-| | | |
-
----
-
-## Tips
-
-- Keep this page short.
-- Add only quick references.
+> Quick reference for subnetting.

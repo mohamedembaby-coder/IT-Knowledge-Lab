@@ -1,36 +1,8 @@
 # Commands
 
-## Purpose
+## Cisco IOS
 
-This file contains all commands related to this lesson.
-
----
-
-## Windows
-
-```powershell
-
+```cisco
+show ip interface brief
+show ip route
 ```
-
----
-
-## Linux
-
-```bash
-
-```
-
----
-
-## Networking
-
-```text
-
-```
-
----
-
-## Notes
-
-- Explain what each command does.
-- Avoid using commands without description.
