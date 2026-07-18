@@ -14,11 +14,10 @@ Provides access to the local Knowledge Repository.
 .DESCRIPTION
 This provider is responsible for discovering and reading
 content from the local repository.
-
-Functions:
-- Get-KLRepositoryRoot
 #>
+
 function Get-KLRepositoryRoot {
+
     [CmdletBinding()]
     param()
 
@@ -29,6 +28,7 @@ function Get-KLRepositoryRoot {
     while ($null -ne $currentPath) {
 
         if (Test-Path (Join-Path $currentPath "Modules")) {
+
             Write-Verbose "Repository root found: $currentPath"
 
             return $currentPath
@@ -45,7 +45,9 @@ function Get-KLRepositoryRoot {
 
     throw "Unable to locate the Knowledge Repository root."
 }
+
 function Get-KLCategories {
+
     [CmdletBinding()]
     param()
 
@@ -62,8 +64,40 @@ function Get-KLCategories {
         Sort-Object Name
 
     return $categories | Select-Object `
-    Name,
-    FullName,
-    CreationTime,
-    LastWriteTime
+        Name,
+        FullName,
+        CreationTime,
+        LastWriteTime
+}
+
+function Get-KLTopics {
+
+    [CmdletBinding()]
+    param()
+
+    Write-Verbose "Retrieving repository topics"
+
+    $categories = Get-KLCategories
+
+    $topics = foreach ($category in $categories) {
+
+        Get-ChildItem `
+            -Path $category.FullName `
+            -Directory |
+        Sort-Object Name |
+        ForEach-Object {
+
+            [PSCustomObject]@{
+                Category      = $category.Name
+                Topic         = $_.Name
+                FullName      = $_.FullName
+                CreationTime  = $_.CreationTime
+                LastWriteTime = $_.LastWriteTime
+            }
+
+        }
+
+    }
+
+    return $topics
 }
