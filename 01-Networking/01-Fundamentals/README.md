@@ -16,6 +16,34 @@ Networking Fundamentals هو حجر الأساس لأي مسار في الشبك
 
 ---
 
+# 📌 Prerequisites | المتطلبات
+
+## English
+
+Before studying this module, you should have:
+
+- Basic computer knowledge.
+- Familiarity with using Windows or Linux.
+- No prior networking experience is required.
+
+## العربية
+
+قبل دراسة هذا الفصل يُفضل أن يكون لديك:
+
+- معرفة أساسية باستخدام الكمبيوتر.
+- القدرة على استخدام Windows أو Linux.
+- لا يشترط وجود خبرة سابقة في الشبكات.
+
+---
+
+After completing this module, you will be ready to study:
+
+- IP Addressing
+- OSI Model
+- TCP/IP
+- Ethernet Switching
+- Routing Fundamentals
+
 # 🎯 Objectives | الأهداف
 
 - Learn the difference between LAN, WAN, MAN, PAN, and WLAN.
@@ -25,6 +53,30 @@ Networking Fundamentals هو حجر الأساس لأي مسار في الشبك
 - Diagnose basic physical-layer (Layer 1) interface and cable problems.
 
 ---
+
+# 🗺️ Learning Path | مسار التعلم
+
+```text
+Networking Fundamentals
+        ↓
+IP Addressing
+        ↓
+Subnetting
+        ↓
+OSI Model
+        ↓
+TCP/IP Model
+        ↓
+Ethernet Switching
+        ↓
+Routing Fundamentals
+```
+
+## العربية
+
+يعرض هذا المسار ترتيب دراسة موضوعات الشبكات داخل المشروع، بحيث يبني كل فصل على المعلومات التي تعلمتها في الفصل السابق.
+
+
 
 # 📚 Theory | الشرح
 
@@ -496,6 +548,40 @@ The TCP/IP model is the practical model used on the Internet.
 | Network Access | 1, 2 |
 
 ---
+
+# 🌍 IPv6 Introduction | مقدمة عن IPv6
+
+## English
+
+IPv4 has a limited address space. As the number of Internet-connected devices increased, IPv6 was introduced to provide a much larger address space and improve scalability.
+
+IPv6 uses **128-bit** addresses instead of IPv4's **32-bit** addresses.
+
+Example:
+
+```
+2001:db8::1
+```
+
+> A dedicated chapter will explain IPv6 in detail.
+
+---
+
+## العربية
+
+تم تطوير IPv6 بسبب نفاد عناوين IPv4.
+
+يستخدم IPv6 عناوين بطول **128 بت** بدلاً من **32 بت** في IPv4، مما يسمح بعدد هائل من العناوين.
+
+مثال:
+
+```
+2001:db8::1
+```
+
+سيتم شرح IPv6 بالكامل في فصل مستقل لاحقًا.
+
+
 
 # 📊 Collision Domain vs Broadcast Domain
 
