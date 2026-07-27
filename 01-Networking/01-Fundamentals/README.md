@@ -1,6 +1,6 @@
 # Networking Fundamentals
 
-This module covers the foundational concepts of computer networking. It aims to provide a solid understanding of how networks operate, the various components involved, and the protocols that enable communication.
+This module provides a comprehensive introduction to the core concepts of computer networking. It aims to equip learners with a solid understanding of how networks operate, the essential components involved, and the fundamental protocols that enable seamless communication across diverse systems.
 
 ---
 
@@ -13,29 +13,13 @@ This module covers the foundational concepts of computer networking. It aims to 
 ## Table of Contents
 
 1.  [Introduction](#introduction)
-    *   [English](#english)
-    *   [العربية](#العربية)
 2.  [Topics Covered](#topics-covered)
-    *   [English](#english-1)
-    *   [العربية](#العربية-1)
 3.  [Labs and Exercises](#labs-and-exercises)
-    *   [English](#english-2)
-    *   [العربية](#العربية-2)
 4.  [Learning Objectives](#learning-objectives)
-    *   [English](#english-3)
-    *   [العربية](#العربية-3)
 5.  [Prerequisites](#prerequisites)
-    *   [English](#english-4)
-    *   [العربية](#العربية-4)
 6.  [Module Structure](#module-structure)
-    *   [English](#english-5)
-    *   [العربية](#العربية-5)
 7.  [Resources](#resources)
-    *   [English](#english-6)
-    *   [العربية](#العربية-6)
 8.  [Next Module](#next-module)
-    *   [English](#english-7)
-    *   [العربية](#العربية-7)
 
 ---
 
@@ -53,25 +37,33 @@ This module covers the foundational concepts of computer networking. It aims to 
 
 ## Topics Covered
 
-*   **Network Topologies:** Understanding different ways networks can be structured (e.g., bus, star, ring, mesh).
-*   **Network Devices:** Introduction to essential hardware like routers, switches, hubs, and access points.
-*   **Network Models:** Exploring the OSI and TCP/IP models to understand the layered approach to networking.
-*   **IP Addressing:** Basics of IPv4 and IPv6 addressing, including subnetting concepts.
-*   **Protocols:** Overview of key networking protocols such as TCP, UDP, HTTP, DNS, DHCP, etc.
-*   **Network Media:** Understanding different types of cables and wireless technologies used for network transmission.
-*   **Basic Network Configuration:** Introduction to configuring network interfaces and common network services.
+This section outlines the key areas that will be explored within this module.
+
+| Topic                 | Description                                                                                             |
+| :-------------------- | :------------------------------------------------------------------------------------------------------ |
+| **Network Topologies**| Understanding different ways networks can be structured (e.g., bus, star, ring, mesh).                  |
+| **Network Devices**   | Introduction to essential hardware like routers, switches, hubs, and access points.                     |
+| **Network Models**    | Exploring the OSI and TCP/IP models to understand the layered approach to networking.                   |
+| **IP Addressing**     | Basics of IPv4 and IPv6 addressing, including subnetting concepts.                                      |
+| **Protocols**         | Overview of key networking protocols such as TCP, UDP, HTTP, DNS, DHCP, etc.                            |
+| **Network Media**     | Understanding different types of cables and wireless technologies used for network transmission.        |
+| **Basic Configuration**| Introduction to configuring network interfaces and common network services.                             |
 
 ---
 
 ## المواضيع التي تغطيها الوحدة
 
-*   **طوبولوجيا الشبكات (Network Topologies):** فهم الطرق المختلفة التي يمكن بها هيكلة الشبكات (مثل: الناقل، النجمة، الحلقة، الشبكة المتشابكة).
-*   **أجهزة الشبكات (Network Devices):** مقدمة للأجهزة الأساسية مثل الموجهات (Routers)، المحولات (Switches)، الموزعات (Hubs)، ونقاط الوصول (Access Points).
-*   **نماذج الشبكات (Network Models):** استكشاف نموذجي OSI و TCP/IP لفهم النهج الطبقي للشبكات.
-*   **عنونة IP (IP Addressing):** أساسيات عنونة IPv4 و IPv6، بما في ذلك مفاهيم تقسيم الشبكات الفرعية (Subnetting).
-*   **البروتوكولات (Protocols):** نظرة عامة على بروتوكولات الشبكات الرئيسية مثل TCP، UDP، HTTP، DNS، DHCP، إلخ.
-*   **وسائط الشبكة (Network Media):** فهم أنواع الكابلات المختلفة وتقنيات الشبكات اللاسلكية المستخدمة لنقل البيانات في الشبكة.
-*   **الإعداد الأساسي للشبكة (Basic Network Configuration):** مقدمة لإعداد واجهات الشبكة وخدمات الشبكة الشائعة.
+يستعرض هذا القسم المجالات الرئيسية التي سيتم استكشافها ضمن هذه الوحدة.
+
+| الموضوع                 | الوصف                                                                                                                            |
+| :-------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| **طوبولوجيا الشبكات**   | فهم الطرق المختلفة التي يمكن بها هيكلة الشبكات (مثل: الناقل، النجمة، الحلقة، الشبكة المتشابكة).                                       |
+| **أجهزة الشبكات**       | مقدمة للأجهزة الأساسية مثل الموجهات (Routers)، المحولات (Switches)، الموزعات (Hubs)، ونقاط الوصول (Access Points).                   |
+| **نماذج الشبكات**       | استكشاف نموذجي OSI و TCP/IP لفهم النهج الطبقي للشبكات.                                                                             |
+| **عنونة IP**           | أساسيات عنونة IPv4 و IPv6، بما في ذلك مفاهيم تقسيم الشبكات الفرعية (Subnetting).                                                    |
+| **البروتوكولات**        | نظرة عامة على بروتوكولات الشبكات الرئيسية مثل TCP، UDP، HTTP، DNS، DHCP، إلخ.                                                      |
+| **وسائط الشبكة**        | فهم أنواع الكابلات المختلفة وتقنيات الشبكات اللاسلكية المستخدمة لنقل البيانات في الشبكة.                                            |
+| **الإعداد الأساسي**     | مقدمة لإعداد واجهات الشبكة وخدمات الشبكة الشائعة.                                                                                 |
 
 ---
 
@@ -83,6 +75,8 @@ This module includes practical labs designed to reinforce theoretical concepts. 
 *   Analyze network traffic using tools like Wireshark.
 *   Simulate network topologies using packet tracer or similar tools.
 
+*(Note: Specific lab titles or more detailed descriptions would enhance this section.)*
+
 ---
 
 ## المختبرات والتمارين
@@ -92,6 +86,8 @@ This module includes practical labs designed to reinforce theoretical concepts. 
 *   إعداد إعدادات الشبكة الأساسية على الأجهزة الافتراضية.
 *   تحليل حركة مرور الشبكة باستخدام أدوات مثل Wireshark.
 *   محاكاة طوبولوجيا الشبكات باستخدام Packet Tracer أو أدوات مشابهة.
+
+*(ملاحظة: عناوين المختبرات المحددة أو الأوصاف الأكثر تفصيلاً ستعزز هذا القسم.)*
 
 ---
 
@@ -161,6 +157,8 @@ This module is structured to build your understanding progressively:
 
 ## Resources
 
+This section provides links to supplementary materials that will aid in your learning.
+
 *   [Cheatsheet](cheatsheet.md)
 *   [Lab Guide](lab-guide.md)
 *   [Notes](notes.md)
@@ -169,6 +167,8 @@ This module is structured to build your understanding progressively:
 ---
 
 ## الموارد
+
+يوفر هذا القسم روابط للمواد التكميلية التي ستساعد في تعلمك.
 
 *   [ملخص سريع](cheatsheet.md)
 *   [دليل المختبر](lab-guide.md)
@@ -179,5 +179,14 @@ This module is structured to build your understanding progressively:
 
 ## Next Module
 
-*   [Networking Fundamentals](01-Networking/01-Fundamentals/README.md) -> **OSI Model**
-*   [أساسيات الشبكات](01-Networking/01-Fundamentals/README.md) -> **نموذج OSI**
+*   **Module:** OSI Model
+    *   **Description:** Delve deeper into the intricacies of the Open Systems Interconnection (OSI) model, understanding each layer's function and how they interact.
+    *   **Link:** [01-Networking/02-OSI-Model/README.md](01-Networking/02-OSI-Model/README.md)
+
+---
+
+## الوحدة التالية
+
+*   **الوحدة:** نموذج OSI
+    *   **الوصف:** تعمق في تفاصيل نموذج الربط المفتوح للأنظمة (OSI)، وفهم وظيفة كل طبقة وكيفية تفاعلها.
+    *   **الرابط:** [01-Networking/02-OSI-Model/README.md](01-Networking/02-OSI-Model/README.md)
