@@ -279,3 +279,91 @@ Topics include:
 - Internet Protocol Suite
 - TCP vs UDP
 - Real-world implementation
+
+---
+
+# Enterprise OSI Reference | مرجع OSI المؤسسي
+
+> استخدم نموذج OSI كمنهج عزل (Isolation Methodology): ابدأ بالدليل الأقل تعقيداً ثم انتقل إلى الطبقة التي تعتمد عليه. النموذج لا يصف كل بروتوكول حديث حرفياً، لكنه لغة مشتركة دقيقة بين فرق الشبكات والأنظمة والأمن.
+
+## كيف تسافر بيانات تطبيق Enterprise؟
+
+```mermaid
+flowchart LR
+    U[Windows Client\nBrowser / Outlook] --> L7[Layer 7\nApplication: HTTPS, DNS]
+    L7 --> L4[Layer 4\nTCP/UDP + Ports]
+    L4 --> L3[Layer 3\nIP + Routing]
+    L3 --> L2[Layer 2\nEthernet + MAC + VLAN]
+    L2 --> L1[Layer 1\nCopper/Fiber/Wi-Fi]
+    L1 --> N[Enterprise Network]
+    N --> S[Application Server]
+```
+
+```text
+Application data
+  └─ TCP segment      : source/destination port
+      └─ IP packet    : source/destination IP
+          └─ L2 frame : source/destination MAC + VLAN tag
+              └─ Bits : electrical, optical, or radio signal
+```
+
+## طبقات OSI في بيئة العمل
+
+| الطبقة | الغرض (Purpose) | أمثلة أجهزة | أمثلة بروتوكولات | PDU | Addressing |
+|---:|---|---|---|---|---|
+| 7 Application | خدمة الشبكة للتطبيق | proxy، WAF، server | HTTP(S)، DNS، SMTP، SMB | Data | FQDN/URL |
+| 6 Presentation | التشفير والترميز والضغط | TLS terminator | TLS، UTF-8، JSON | Data | — |
+| 5 Session | إنشاء وإدارة الجلسة | session gateway | RPC، NetBIOS concepts | Data | Session ID |
+| 4 Transport | نقل من طرف إلى طرف | firewall/L4 load balancer | TCP، UDP | Segment/Datagram | Port number |
+| 3 Network | التوجيه بين الشبكات | router، L3 switch | IPv4، IPv6، ICMP | Packet | IP address |
+| 2 Data Link | التسليم داخل LAN | switch، NIC، bridge | Ethernet، 802.1Q، STP | Frame | MAC address |
+| 1 Physical | الإشارة والوسيط | cable، AP radio، hub | 1000BASE-T، fiber PHY | Bits | — |
+
+## مقارنة OSI وTCP/IP
+
+| OSI | TCP/IP | أمثلة عملية |
+|---|---|---|
+| Layers 7–5 | Application | HTTPS، DNS، SMTP، TLS |
+| Layer 4 | Transport | TCP، UDP، ports |
+| Layer 3 | Internet | IP، ICMP، routing |
+| Layers 2–1 | Network Access | Ethernet، Wi-Fi، MAC، cable |
+
+**قاعدة مهمة:** TCP/IP هو model implementation عملي للإنترنت؛ OSI هو reference model ممتاز للفهم والتشخيص. لا تقل إن “OSI protocol” أو إن كل بروتوكول يقع دائماً في طبقة واحدة بشكل مطلق.
+
+## مقارنة الأجهزة: Hub وSwitch وRouter
+
+| الجهاز | الطبقة الأساسية | قرار الإرسال | نطاق البث (Broadcast Domain) | الاستخدام الحديث |
+|---|---:|---|---|---|
+| Hub | 1 | يكرر الإشارة للجميع | واحد | قديم؛ لا يستخدم في Enterprise |
+| Switch | 2 | MAC address table | واحد لكل VLAN | وصول المستخدمين والخوادم |
+| Router / L3 Switch | 3 | routing table وIP prefix | يفصل الـ broadcast domains | توجيه VLANs والفروع |
+
+## مقارنة TCP وUDP
+
+| جانب | TCP | UDP |
+|---|---|---|
+| الاتصال | Connection-oriented | Connectionless |
+| الاعتمادية | ACK، sequence، retransmission | يترك الاعتمادية للتطبيق عند الحاجة |
+| أمثلة | HTTPS، SMB، RDP | DNS، NTP، VoIP |
+| فائدة تشغيلية | وصول مرتب للتطبيقات الحساسة | latency أقل للتطبيقات الزمنية |
+
+## مثال Enterprise: وصول موظف إلى بوابة HR
+
+يحل DNS اسم `hr.corp.example` في Layer 7، ويُنشأ TCP session إلى `443` في Layer 4، ثم يختار جهاز الموظف default gateway طبقاً لعنوان IP في Layer 3. يرسل switch الإطار داخل VLAN الصحيحة في Layer 2، وتنتقل bits عبر Ethernet أو Wi-Fi في Layer 1. عند الفشل، يختبر المهندس كل دليل في ترتيبه بدلاً من تعطيل firewall أو إعادة تشغيل الخادم بلا سبب.
+
+## CCNA Exam Notes
+
+- يتعلم switch عنوان **source MAC** في جدول CAM/MAC، ثم يوجه بناءً على destination MAC.
+- يعيد router كتابة Layer 2 header عند كل hop ويخفض TTL؛ لا يمرر broadcasts من VLAN إلى أخرى افتراضياً.
+- PDU: Data (L7–L5)، Segment (TCP L4)، Datagram (UDP L4)، Packet (L3)، Frame (L2)، Bits (L1).
+- لا يعني فشل `ping` بالضرورة تعطل Layer 3؛ قد يحجب ACL أو firewall ICMP.
+- منفذ TCP/UDP جزء من Layer 4 وليس عنوان IP أو MAC.
+
+## مسار التعلم والتطبيق
+
+1. ابدأ بـ Layer 1 و2: link، cable، Wi-Fi، VLAN، MAC.
+2. أثبت Layer 3: IP، prefix، gateway، routing.
+3. اختبر Layer 4: TCP/UDP port، firewall، session.
+4. تحقّق من Layer 7: DNS، TLS، credentials، application logs.
+
+راجع [الملاحظات التفصيلية](notes.md)، [مرجع الأوامر](commands.md)، [الملخص السريع](cheatsheet.md)، [المختبرات](lab-guide.md)، و[أدلة التشخيص](troubleshooting.md).

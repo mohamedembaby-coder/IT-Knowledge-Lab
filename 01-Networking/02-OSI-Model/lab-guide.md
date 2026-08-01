@@ -8023,3 +8023,129 @@ Binary
 
 ## Network ID and Host ID
 
+---
+
+# Enterprise Wireshark and Windows Labs | مختبرات Wireshark وWindows المؤسسية
+
+> هذه المختبرات تكمل المختبرات السابقة. احتفظ بملف capture وoutput الأوامر كدليل، ونفّذ traffic capture على جهازك أو بيئة مختبر مصرح بها فقط.
+
+## Lab 55 — ربط Windows بالطبقات السبع
+
+### الهدف
+
+جمع evidence من Windows لكل طبقة OSI عند الوصول إلى خدمة HTTPS داخلية.
+
+### المتطلبات
+
+- Windows 10/11 أو Windows Server.
+- اسم خدمة مختبر مثل `web01.lab.example` أو خادم HTTP/HTTPS محلي.
+- صلاحية تشغيل PowerShell وWireshark.
+
+### الخطوات
+
+```powershell
+Get-NetAdapter
+Get-NetIPConfiguration
+Get-NetNeighbor -AddressFamily IPv4
+Get-NetRoute -AddressFamily IPv4
+Resolve-DnsName web01.lab.example
+Test-NetConnection web01.lab.example -Port 443 -InformationLevel Detailed
+```
+
+| الأمر | الطبقة | Evidence المتوقع |
+|---|---:|---|
+| `Get-NetAdapter` | 1 | NIC Up وLinkSpeed |
+| `Get-NetNeighbor` | 2 | gateway MAC/ARP neighbor |
+| `Get-NetIPConfiguration` | 3 | IP، prefix، default gateway |
+| `Test-NetConnection -Port 443` | 4 | TCP port result |
+| `Resolve-DnsName` | 7 | A/AAAA record وDNS server |
+
+**معيار النجاح:** اشرح لماذا لا يثبت نجاح كل أمر كل الطبقات؛ مثلاً link up لا يثبت صحة VLAN، وDNS success لا يثبت أن TCP/443 متاح.
+
+## Lab 56 — تحليل ARP وDNS وTCP في Wireshark
+
+### الهدف
+
+رؤية encapsulation عملياً وربط الحقول بالطبقات 2 و3 و4 و7.
+
+```mermaid
+flowchart LR
+    A[Clear ARP/DNS cache in lab] --> B[Start Wireshark capture]
+    B --> C[Resolve DNS name]
+    C --> D[Open HTTPS service]
+    D --> E[Filter ARP, DNS, TCP]
+    E --> F[Document MAC/IP/Port/PDU]
+```
+
+### خطوات التنفيذ
+
+1. ابدأ capture على الواجهة النشطة في Wireshark.
+2. في مختبر فقط، نفذ `arp -d *` لتوليد ARP جديد، ثم `ping <default-gateway>`.
+3. نفذ `Resolve-DnsName web01.lab.example`.
+4. افتح الخدمة أو نفذ `Test-NetConnection web01.lab.example -Port 443`.
+5. أوقف capture واستخدم display filters التالية.
+
+```text
+arp
+dns
+tcp.flags.syn == 1
+tcp.port == 443
+ip.addr == <server-ip>
+```
+
+| Packet | ما الذي تبحث عنه؟ | طبقة OSI |
+|---|---|---:|
+| ARP Request/Reply | sender/target MAC وIPv4 | 2/3 boundary |
+| DNS query/response | query name وA/AAAA record | 7 فوق 4/3 |
+| SYN/SYN-ACK/ACK | source/destination ports وflags | 4 |
+| Ethernet II | source/destination MAC | 2 |
+| IPv4/IPv6 | source/destination IP وTTL/hop limit | 3 |
+
+**ملاحظة أمنية:** لا توثق passwords أو session tokens أو بيانات حساسة من captures.
+
+## Lab 57 — طبقة النقل: TCP وUDP
+
+### السيناريو
+
+يوجد DNS resolver متاح على UDP/53، وخدمة ويب على TCP/443. اختبرهما منفصلين ولا تستنتج إتاحة أحدهما من الآخر.
+
+```powershell
+Resolve-DnsName web01.lab.example
+Test-NetConnection web01.lab.example -Port 443
+Get-NetTCPConnection | Where-Object { $_.RemotePort -eq 443 }
+Get-NetUDPEndpoint
+```
+
+### أسئلة التحليل
+
+- أين يظهر TCP three-way handshake في capture؟
+- هل UDP يملك SYN أو ACK مثل TCP؟
+- كيف تفرق بين DNS ناجح وتطبيق HTTPS غير متاح؟
+
+## Lab 58 — تشخيص طبقي لخلل مقصود
+
+### الحالة A: DNS خاطئ
+
+اجعل سجل المختبر يشير إلى IP غير صحيح أو استخدم DNS server غير صالح. أثبت أن IP الصحيح يعمل، بينما FQDN يفشل، ثم أصلح DNS وأعد الاختبار.
+
+### الحالة B: منفذ محجوب
+
+اسم الخادم يحل بشكل صحيح، لكن firewall يمنع TCP/443. استخدم `Test-NetConnection` وWindows Firewall logs أو إعداد المختبر لإثبات Layer 4 policy failure.
+
+### الحالة C: VLAN خاطئة (Packet Tracer/EVE-NG)
+
+ضع منفذ العميل في VLAN غير متوقعة. افحص `show vlan brief` و`show interfaces <port> switchport` وبيّن كيف أدى ذلك إلى IP/gateway غير صحيحين.
+
+## نموذج التسليم (Lab Evidence Template)
+
+```text
+Objective:
+Topology and IP plan:
+Commands executed:
+Evidence collected:
+OSI layer of root cause:
+Fix and rollback:
+Verification: link + IP + DNS + TCP/UDP port + application test
+Lessons learned:
+```
+
