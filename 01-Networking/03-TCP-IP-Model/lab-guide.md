@@ -947,3 +947,143 @@ You have completed the OSI Model Lab Guide.
 
 Next recommended module:
 03-TCP-IP-Model
+
+---
+
+# Enterprise TCP/IP Labs | مختبرات TCP/IP المؤسسية
+
+> المختبرات التالية تكمل المحتوى السابق. استخدم Windows 10/11 أو Windows Server وWireshark وPacket Tracer/EVE-NG في بيئة مصرح بها فقط.
+
+## Lab 25 — End-to-End Windows TCP/IP Baseline
+
+### الهدف
+
+إنشاء baseline موثق من الواجهة حتى التطبيق قبل تشخيص incident.
+
+```powershell
+Get-NetAdapter
+Get-NetIPConfiguration
+Get-NetNeighbor -AddressFamily IPv4
+Get-NetRoute -AddressFamily IPv4
+Resolve-DnsName example.com
+Test-NetConnection example.com -Port 443 -InformationLevel Detailed
+```
+
+سجّل link state وMAC وIP/prefix وgateway وDNS وroute وTCP result. اشرح أي طبقة يثبتها كل أمر وأي طبقة لا يثبتها.
+
+## Lab 26 — TCP Handshake and Termination with Wireshark
+
+### الهدف
+
+رؤية SYN/SYN-ACK/ACK ثم FIN/ACK وربط ports بالحالة.
+
+1. ابدأ capture على الواجهة النشطة.
+2. نفّذ `Test-NetConnection example.com -Port 443` أو افتح موقعاً مختبرياً.
+3. استخدم filter: `tcp.port == 443`.
+4. اختر SYN packet ثم Follow → TCP Stream عند توفر payload.
+5. أوقف الالتقاط وابحث عن FIN أو RST عند إغلاق الجلسة.
+
+```text
+tcp.flags.syn == 1
+tcp.flags.syn == 1 && tcp.flags.ack == 1
+tcp.flags.fin == 1
+tcp.flags.reset == 1
+```
+
+**معيار النجاح:** تحدد source ephemeral port، destination port، sequence/ack numbers، والفرق بين graceful FIN وabortive RST.
+
+## Lab 27 — DHCP وDNS Packet Flow
+
+### DHCP
+
+في مختبر يملك DHCP server، ابدأ capture ثم جدّد lease:
+
+```cmd
+ipconfig /release
+ipconfig /renew
+```
+
+استخدم filter `dhcp || bootp` وحدد Discover وOffer وRequest وACK، ثم اشرح source/destination IP وUDP 67/68 وسبب broadcast في البداية.
+
+### DNS
+
+```powershell
+Resolve-DnsName lab.example -Type A
+Resolve-DnsName lab.example -Type AAAA
+```
+
+استخدم filter `dns`، وحدد query وresponse وtransaction ID وanswer وresponse code. كرر باستخدام resolver معروف في المختبر ولا تسجل بيانات خاصة.
+
+## Lab 28 — ARP وICMP وTraceroute
+
+```cmd
+arp -d *
+ping <default-gateway>
+tracert -d <server-ip>
+```
+
+Wireshark filters:
+
+```text
+arp
+icmp
+icmp.type == 8 || icmp.type == 0
+icmp.type == 11
+```
+
+حدد ARP request/reply، Echo Request/Reply، وTime Exceeded الذي يظهر عند traceroute. فسّر لماذا يبحث جهاز الوجهة البعيدة عن MAC البوابة لا MAC الخادم.
+
+## Lab 29 — IPv4/IPv6 Dual-Stack Comparison
+
+```powershell
+Resolve-DnsName dual.lab.example
+Test-Connection dual.lab.example -IPv4 -Count 3
+Test-Connection dual.lab.example -IPv6 -Count 3
+Get-NetRoute -AddressFamily IPv4
+Get-NetRoute -AddressFamily IPv6
+Get-NetNeighbor -AddressFamily IPv6
+```
+
+قارن A وAAAA، IPv4 route وIPv6 route، ARP مقابل NDP، وICMPv4 مقابل ICMPv6. لا تعتبر نجاح IPv4 دليلاً على صحة IPv6.
+
+## Lab 30 — TCP/UDP Port Troubleshooting Scenario
+
+### السيناريو
+
+DNS يعمل، لكن تطبيق HTTPS لا يعمل من VLAN المستخدمين.
+
+1. أثبت DNS عبر `Resolve-DnsName`.
+2. اختبر `Test-NetConnection app.lab.example -Port 443`.
+3. افحص listening state على الخادم بواسطة `Get-NetTCPConnection -State Listen`.
+4. التقط traffic وابحث عن SYN بلا SYN-ACK أو RST.
+5. راجع firewall/ACL policy حسب source subnet، ثم أصلح في المختبر فقط.
+
+### التسليم
+
+```text
+Topology:
+Client/source subnet:
+FQDN and resolved IP:
+Port and protocol:
+Wireshark evidence:
+Root cause layer:
+Fix, rollback, and verification:
+```
+
+## Lab 31 — Cisco TCP/IP Forwarding
+
+```cisco
+show ip interface brief
+show ip route
+show ip arp
+show interfaces counters errors
+```
+
+في Packet Tracer أنشئ client VLAN وserver VLAN وSVIs، ثم أثبت: ARP للبوابة، route connected، ping بين الشبكات، وTCP port test. أضف route خاطئاً كتحدٍ، ثم حدّد hop المتأثر باستخدام `tracert`.
+
+## Lab Safety and Cleanup
+
+- لا تستخدم `arp -d *` أو `/release` على جهاز إنتاج.
+- لا تلتقط credentials أو tokens أو payloads سرية.
+- احفظ capture بعد تنقيته باسم المختبر والتاريخ، واحذف الملفات الحساسة.
+- أعد DHCP/static settings وPacket Tracer topology إلى الحالة الأصلية.
