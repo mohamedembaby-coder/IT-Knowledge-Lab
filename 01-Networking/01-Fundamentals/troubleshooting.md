@@ -93,3 +93,118 @@ A structured method helps diagnose problems efficiently and prevents overlooking
 *   `ipconfig`/`ifconfig`/`ip addr`: Check local configuration.
 *   `tracert`/`traceroute`: Map network path.
 *   `nslookup`: Test DNS resolution.
+
+---
+
+# Enterprise Troubleshooting Runbooks | أدلة التشخيص المؤسسية
+
+## قاعدة العمل: اعزل ولا تخمّن
+
+ابدأ بتحديد النطاق: مستخدم واحد أم VLAN أم فرع أم خدمة؟ اجمع evidence قبل الإصلاح، وقارن endpoint متأثراً بآخر يعمل في الشبكة نفسها. لا تستخدم restart أو reset كخطوة أولى.
+
+```mermaid
+flowchart TD
+    A[بلاغ: التطبيق لا يعمل] --> B{هل Link/NIC سليم؟}
+    B -->|لا| C[L1: cable, Wi-Fi, port, NIC]
+    B -->|نعم| D{هل IP/prefix/gateway صحيح؟}
+    D -->|لا| E[L3 local: DHCP, static config, VLAN]
+    D -->|نعم| F{هل IP target قابل للوصول؟}
+    F -->|لا| G[Route, ACL, firewall, remote host]
+    F -->|نعم| H{هل DNS وTCP port يعملان؟}
+    H -->|لا| I[DNS record/resolver or service policy]
+    H -->|نعم| J[L7: application, TLS, authentication]
+```
+
+## سيناريو 1: Windows يحصل على APIPA
+
+| بند | التفاصيل |
+|---|---|
+| العرض | IP ضمن `169.254.0.0/16` ولا توجد gateway/DNS صحيحة |
+| الاحتمالات | منفذ/VLAN خاطئ، DHCP scope ممتلئ، DHCP service متوقف، DHCP relay غائب |
+| Evidence | `ipconfig /all`، `show vlan brief`، DHCP logs، scope utilization |
+| الإصلاح | أصلح VLAN/relay/service/scope ثم اطلب lease جديداً |
+| التحقق | IP من scope الصحيح، gateway reachable، DNS resolution ناجح |
+
+```powershell
+ipconfig /all
+ipconfig /renew
+Get-NetIPConfiguration
+```
+
+**ملاحظة:** لا تعتمد على static IP لتجاوز DHCP إلا كاختبار محدود ومصرح؛ فقد تخفي عطل البنية أو تسبب duplicate IP.
+
+## سيناريو 2: يصل IP لكن لا يصل الاسم (DNS)
+
+| الدليل | الاستنتاج |
+|---|---|
+| `ping 10.30.30.10` ينجح | L1–L3 إلى الخادم محتمل أن تكون سليمة |
+| `Resolve-DnsName erp.corp.example` يفشل | resolver أو record أو suffix مشكلة محتملة |
+| lookup ينجح لكن TCP/443 يفشل | DNS ليس السبب النهائي؛ افحص service/firewall |
+
+```powershell
+Get-DnsClientServerAddress
+Resolve-DnsName erp.corp.example
+Test-NetConnection erp.corp.example -Port 443 -InformationLevel Detailed
+```
+
+## سيناريو 3: بطء متقطع وCRC errors على Cisco
+
+| خطوة | الإجراء |
+|---|---|
+| 1 | قارن error counters مرتين بفاصل زمني، لا تعتمد على رقم تاريخي فقط. |
+| 2 | افحص الكابل/patch panel/SFP وspeed/duplex في الطرفين. |
+| 3 | افحص utilization وdrops ووجود loop/STP events. |
+| 4 | استبدل عنصراً واحداً واختبر ثم وثق التغيير. |
+
+```cisco
+show interfaces gigabitEthernet1/0/10
+show interfaces counters errors
+show logging | include STP|LINK|LINEPROTO
+```
+
+## سيناريو 4: المستخدم يصل إلى الخادم لكن التطبيق يفشل
+
+**التمييز المهم:** نجاح ICMP لا يثبت TCP/UDP أو TLS أو حساب المستخدم.
+
+```powershell
+Test-NetConnection app01.corp.example -Port 443
+Get-NetTCPConnection -RemotePort 443 -ErrorAction SilentlyContinue
+```
+
+تحقق بالترتيب: DNS record → route → firewall/ACL → listening service → certificate/TLS → application authentication. أرفق وقت الاختبار وsource IP وdestination IP والمنفذ في التذكرة.
+
+## سيناريو 5: جهاز في VLAN خاطئة
+
+| العرض | الدليل | الحل |
+|---|---|---|
+| عنوان DHCP من شبكة مختلفة | DHCP scope لا يطابق القسم | تحقق من access VLAN في المنفذ |
+| لا يصل إلى gateway المتوقع | `ipconfig` و`show interface switchport` مختلفان | صحح VLAN ثم renew lease |
+| يعمل بعد النقل لمنفذ آخر | المشكلة تتبع المنفذ | راجع port template وMAC table |
+
+```cisco
+show interfaces gigabitEthernet1/0/10 switchport
+show mac address-table interface gigabitEthernet1/0/10
+show vlan brief
+```
+
+## قالب توثيق Incident
+
+```text
+Impact: من المتأثر؟ وما الخدمة؟
+Scope: جهاز / VLAN / موقع / مؤسسة.
+Evidence: أوامر، timestamps، counters، logs.
+Root cause: السبب المثبت، لا التخمين.
+Change: ما الذي تغير ومن وافق عليه؟
+Verification: IP + DNS + port + application test.
+Prevention: monitoring، documentation، أو configuration hardening.
+```
+
+## أسئلة مقابلات تشخيصية
+
+### كيف تشخّص “لا يوجد إنترنت” لمستخدم واحد؟
+
+**الإجابة:** أحدد النطاق أولاً، ثم أتحقق من Layer 1 وNIC، ثم IP/prefix/gateway/DNS. أختبر gateway وknown IP وFQDN والمنفذ المطلوب، وأقارن بجهاز يعمل في VLAN نفسها. لا أعد تشغيل router أو أعطل firewall دون دليل.
+
+### ما الفرق بين packet loss وlatency؟
+
+**الإجابة:** latency هو زمن وصول الحزمة، بينما packet loss يعني أن الحزمة لم تصل. يمكن أن يكون latency منخفضاً مع loss، وكلاهما يؤثر في التطبيقات بطرق مختلفة؛ TCP يعيد الإرسال بينما VoIP قد يسبب تقطعاً مباشراً.

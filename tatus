@@ -1,0 +1,676 @@
+warning: in the working copy of '01-Networking/01-Fundamentals/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '01-Networking/01-Fundamentals/cheatsheet.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '01-Networking/01-Fundamentals/commands.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '01-Networking/01-Fundamentals/lab-guide.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '01-Networking/01-Fundamentals/notes.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '01-Networking/01-Fundamentals/troubleshooting.md', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/01-Networking/01-Fundamentals/README.md b/01-Networking/01-Fundamentals/README.md[m
+[1mindex ce7ef45..89f2ff8 100644[m
+[1m--- a/01-Networking/01-Fundamentals/README.md[m
+[1m+++ b/01-Networking/01-Fundamentals/README.md[m
+[36m@@ -189,4 +189,93 @@[m [mThis section provides links to supplementary materials that will aid in your lea[m
+ [m
+ *   **الوحدة:** نموذج OSI[m
+     *   **الوصف:** تعمق في تفاصيل نموذج الربط المفتوح للأنظمة (OSI)، وفهم وظيفة كل طبقة وكيفية تفاعلها.[m
+[31m-    *   **الرابط:** [01-Networking/02-OSI-Model/README.md](01-Networking/02-OSI-Model/README.md)[m
+[32m+[m[32m*   **الرابط:** [01-Networking/02-OSI-Model/README.md](01-Networking/02-OSI-Model/README.md)[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m# Enterprise Foundation | الأساس المؤسسي[m
+[32m+[m
+[32m+[m[32m> يقدّم هذا القسم الصورة العملية التي يحتاجها مهندس الدعم أو الشبكات في بيئة **Enterprise Network**. لا يحل محل الوحدات اللاحقة المتخصصة؛ بل يربط المفاهيم الأساسية بسيناريو عمل حقيقي.[m
+[32m+[m
+[32m+[m[32m## رحلة طلب المستخدم (User Request Journey)[m
+[32m+[m
+[32m+[m[32mعندما يفتح مستخدم تطبيقاً داخلياً مثل `https://erp.corp.example`، تتعاون طبقات وأجهزة متعددة. نجاح `ping` وحده لا يثبت أن التطبيق يعمل، لأن التطبيق يعتمد أيضاً على DNS وTCP وTLS والمنفذ والخدمة نفسها.[m
+[32m+[m
+[32m+[m[32m```mermaid[m
+[32m+[m[32mflowchart LR[m
+[32m+[m[32m    U[Windows Client] -->|DNS query UDP/TCP 53| D[DNS Server][m
+[32m+[m[32m    U -->|ARP for default gateway| S[Access Switch][m
+[32m+[m[32m    S --> G[Default Gateway / L3 Switch][m
+[32m+[m[32m    G --> F[Firewall][m
+[32m+[m[32m    F --> A[ERP Application Server][m
+[32m+[m[32m    D -->|A/AAAA record| U[m
+[32m+[m[32m    A -->|HTTPS TCP 443| U[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m```text[m
+[32m+[m[32mPC-01 ── Access Port ── SW-Access ── Trunk ── L3 Switch ── Firewall ── ERP[m
+[32m+[m[32m  |                         |                |                 |[m
+[32m+[m[32m NIC/MAC                  VLAN 20        Gateway .1        Policy + NAT[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m## مقارنة تشغيلية (Operational Comparison)[m
+[32m+[m
+[32m+[m[32m| العنصر | العربية | English term | كيف يستخدمه المهندس؟ |[m
+[32m+[m[32m|---|---|---|---|[m
+[32m+[m[32m| العنوان المنطقي | يحدد موقع الجهاز بين الشبكات | IP address | route traffic إلى شبكة أخرى |[m
+[32m+[m[32m| العنوان الفيزيائي | يحدد واجهة الشبكة محلياً | MAC address | switch forwarding داخل VLAN |[m
+[32m+[m[32m| البوابة الافتراضية | أول قفزة خارج الشبكة المحلية | Default gateway | إرسال traffic إلى شبكات بعيدة |[m
+[32m+[m[32m| المنفذ | يحدد الخدمة داخل الجهاز | TCP/UDP port | التحقق من HTTPS 443 أو DNS 53 |[m
+[32m+[m[32m| اسم المضيف | اسم قابل للقراءة بدلاً من IP | FQDN / hostname | DNS resolution وتسجيل الأحداث |[m
+[32m+[m
+[32m+[m[32m## مثال Cisco وWindows من مؤسسة[m
+[32m+[m
+[32m+[m[32mلدى شركة قسمان: Finance في `VLAN 20` وHR في `VLAN 30`. يقوم Cisco Layer 3 Switch بتوجيه الشبكات، بينما يمنع Firewall الوصول غير المصرح به بين الأقسام. جهاز Windows في Finance يحصل على إعداداته من DHCP ويستخدم DNS الداخلي للوصول إلى ERP.[m
+[32m+[m
+[32m+[m[32m```cisco[m
+[32m+[m[32minterface GigabitEthernet1/0/10[m
+[32m+[m[32m description FIN-PC-01[m
+[32m+[m[32m switchport mode access[m
+[32m+[m[32m switchport access vlan 20[m
+[32m+[m[32m spanning-tree portfast[m
+[32m+[m
+[32m+[m[32minterface Vlan20[m
+[32m+[m[32m ip address 10.20.20.1 255.255.255.0[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m```powershell[m
+[32m+[m[32mGet-NetIPConfiguration[m
+[32m+[m[32mResolve-DnsName erp.corp.example[m
+[32m+[m[32mTest-NetConnection erp.corp.example -Port 443[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m## ملاحظات CCNA (CCNA Exam Notes)[m
+[32m+[m
+[32m+[m[32m- يعمل **Switch** عادةً في Layer 2 ويستخدم جدول MAC، بينما يختار **Router / Layer 3 Switch** المسار باستخدام جدول التوجيه (Routing Table).[m
+[32m+[m[32m- يغيّر الراوتر إطار Layer 2 في كل hop، لكن عنواني IP للمصدر والوجهة يظلان غالباً كما هما من طرف إلى طرف، ما لم يحدث NAT.[m
+[32m+[m[32m- `169.254.0.0/16` هو عنوان **APIPA** في Windows ويشير غالباً إلى فشل DHCP، وليس بديلاً عن عنوان مؤسسة صحيح.[m
+[32m+[m[32m- DNS يستخدم UDP/53 غالباً، وقد يستخدم TCP/53 للردود الكبيرة أو zone transfer. لا تفترض أن DNS “UDP فقط”.[m
+[32m+[m[32m- ICMP مفيد للتشخيص، لكن نجاح أو فشل `ping` ليس دليلاً قاطعاً على توفر تطبيق TCP/UDP.[m
+[32m+[m
+[32m+[m[32m## أفضل الممارسات (Best Practices)[m
+[32m+[m
+[32m+[m[32m1. وثّق VLAN، subnet، gateway، DNS، المالك، والغرض من كل شبكة في IP Address Management (IPAM).[m
+[32m+[m[32m2. استخدم DHCP reservations للخوادم والطابعات والبنية التحتية عند الحاجة؛ لا توزع عناوين ثابتة بلا سجل.[m
+[32m+[m[32m3. استخدم NTP، DNS داخلياً موثوقاً، وSNMPv3/Syslog للمراقبة بدلاً من الاعتماد على ملاحظات المستخدمين.[m
+[32m+[m[32m4. افصل شبكات المستخدمين والخوادم والطابعات والضيوف والإدارة باستخدام VLANs وfirewall policies.[m
+[32m+[m[32m5. اختبر التغيير في نافذة Change Management، وخذ نسخة إعدادات (configuration backup) قبل تعديل Cisco أو Firewall.[m
+[32m+[m
+[32m+[m[32m## قاموس أساسي (Glossary)[m
+[32m+[m
+[32m+[m[32m| المصطلح | التعريف المختصر |[m
+[32m+[m[32m|---|---|[m
+[32m+[m[32m| **Bandwidth** | السعة النظرية للوصلة، مثل 1 Gbps. |[m
+[32m+[m[32m| **Throughput** | المعدل الفعلي للبيانات الناجحة بعد الحمل والترويسات والأخطاء. |[m
+[32m+[m[32m| **Latency** | زمن انتقال الحزمة من مصدر إلى وجهة. |[m
+[32m+[m[32m| **Jitter** | تباين زمن الوصول؛ مهم لـ VoIP والفيديو. |[m
+[32m+[m[32m| **Packet loss** | حزم لم تصل؛ يسبب إعادة إرسال أو تقطعاً بحسب البروتوكول. |[m
+[32m+[m[32m| **Duplex** | أسلوب الإرسال Half/Full؛ عدم التطابق يسبب بطئاً وأخطاء. |[m
+[32m+[m[32m| **FQDN** | الاسم الكامل مثل `server01.corp.example`. |[m
+[32m+[m[32m| **NIC** | بطاقة/واجهة الشبكة (Network Interface Card). |[m
+[32m+[m
+[32m+[m[32m> **صورة مقترحة (Image Placeholder):** لقطة موثقة لطوبولوجيا Access–Distribution–Core توضح VLANs وFirewall وWindows Server. أضف صورة أصلية أو مرخصة لاحقاً في `images/` مع وصف بديل (alt text).[m
+[1mdiff --git a/01-Networking/01-Fundamentals/cheatsheet.md b/01-Networking/01-Fundamentals/cheatsheet.md[m
+[1mindex 2050b57..4c3c469 100644[m
+[1m--- a/01-Networking/01-Fundamentals/cheatsheet.md[m
+[1m+++ b/01-Networking/01-Fundamentals/cheatsheet.md[m
+[36m@@ -247,4 +247,75 @@[m [mCheck Firewall[m
+ [m
+ ---[m
+ [m
+[31m-> **💡 Tip:** Keep this file as your quick reference during labs, troubleshooting, interviews, and daily IT operations.[m
+\ No newline at end of file[m
+[32m+[m[32m> **💡 Tip:** Keep this file as your quick reference during labs, troubleshooting, interviews, and daily IT operations.[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m# 🚀 Enterprise Quick Reference | مرجع Enterprise السريع[m
+[32m+[m
+[32m+[m[32m## طبقة المشكلة مقابل الدليل (Layer-to-Evidence)[m
+[32m+[m
+[32m+[m[32m| الطبقة | أعراض نموذجية | دليل سريع | أداة أولى |[m
+[32m+[m[32m|---|---|---|---|[m
+[32m+[m[32m| L1 Physical | Link down، CRC، Wi-Fi ضعيف | LED، link speed، counters | `Get-NetAdapter` / `show interfaces` |[m
+[32m+[m[32m| L2 Data Link | VLAN خاطئة، MAC غير ظاهر | access VLAN وMAC table | `show vlan brief` |[m
+[32m+[m[32m| L3 Network | gateway/route مفقود | IP/prefix/route | `ipconfig /all` / `show ip route` |[m
+[32m+[m[32m| L4 Transport | port blocked، TCP reset | TCP handshake/port test | `Test-NetConnection` |[m
+[32m+[m[32m| L7 Application | DNS، TLS، service failure | name resolution/logs | `Resolve-DnsName` |[m
+[32m+[m
+[32m+[m[32m## منافذ Enterprise شائعة[m
+[32m+[m
+[32m+[m[32m| الخدمة | Port / Protocol | ملاحظة تشغيلية |[m
+[32m+[m[32m|---|---|---|[m
+[32m+[m[32m| DNS | 53 UDP/TCP | UDP غالباً؛ TCP للردود الكبيرة/zone transfer |[m
+[32m+[m[32m| DHCP | 67/68 UDP | server/client؛ يستخدم relay بين VLANs |[m
+[32m+[m[32m| NTP | 123 UDP | أساسي لـ Kerberos والـ logs |[m
+[32m+[m[32m| Kerberos | 88 TCP/UDP | Active Directory authentication |[m
+[32m+[m[32m| LDAPS | 636 TCP | LDAP مشفّر |[m
+[32m+[m[32m| WinRM | 5985/5986 TCP | الإدارة عن بعد HTTP/HTTPS |[m
+[32m+[m[32m| SMB | 445 TCP | file shares؛ لا تكشفه للإنترنت |[m
+[32m+[m[32m| RDP | 3389 TCP/UDP | اجعله خلف VPN/MFA أو jump host |[m
+[32m+[m[32m| HTTPS | 443 TCP | اختبره بـ TCP وليس ICMP فقط |[m
+[32m+[m
+[32m+[m[32m## TCP States المختصرة[m
+[32m+[m
+[32m+[m[32m```text[m
+[32m+[m[32mClient                 Server[m
+[32m+[m[32mSYN  ----------------->[m
+[32m+[m[32m     <----------------- SYN, ACK[m
+[32m+[m[32mACK  ----------------->  ESTABLISHED[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m| الحالة | معناها التشخيصي |[m
+[32m+[m[32m|---|---|[m
+[32m+[m[32m| `SYN_SENT` | العميل ينتظر رد الخادم؛ افحص ACL/route/server |[m
+[32m+[m[32m| `ESTABLISHED` | اتصال TCP قائم، لا يعني أن التطبيق سليم بالكامل |[m
+[32m+[m[32m| `TIME_WAIT` | إغلاق طبيعي غالباً؛ كثرة غير طبيعية قد تشير إلى نمط تطبيق |[m
+[32m+[m[32m| `LISTENING` | خدمة تنتظر اتصالات على المنفذ |[m
+[32m+[m
+[32m+[m[32m## مقارنة سريعة: Private/Public وStatic/DHCP[m
+[32m+[m
+[32m+[m[32m| المقارنة | الخيار الأول | الخيار الثاني |[m
+[32m+[m[32m|---|---|---|[m
+[32m+[m[32m| نوع IP | Private: داخلي وغير موجه عبر Internet | Public: قابل للتوجيه وفق سياسة ISP/firewall |[m
+[32m+[m[32m| طريقة التعيين | Static: تحكم يدوي ومخاطر تعارض | DHCP: مركزي وقابل للتتبع |[m
+[32m+[m[32m| الاستخدام المقترح | Infrastructure مع توثيق أو reservation | Endpoints عبر DHCP scope مضبوط |[m
+[32m+[m
+[32m+[m[32m## CCNA Facts[m
+[32m+[m
+[32m+[m[32m- Switch يبني **MAC address table** من source MAC، وليس destination MAC.[m
+[32m+[m[32m- Router يقلل TTL عند كل hop؛ انتهاء TTL يولد ICMP Time Exceeded غالباً.[m
+[32m+[m[32m- ARP يترجم IPv4 إلى MAC داخل broadcast domain، وليس عبر Router.[m
+[32m+[m[32m- الـ default gateway يجب أن يكون reachable في نفس subnet للعميل.[m
+[32m+[m[32m- لا تستخدم classful addressing لتصميم حديث؛ استخدم CIDR/prefix length.[m
+[32m+[m
+[32m+[m[32m## Glossary سريع[m
+[32m+[m
+[32m+[m[32m| المصطلح | المعنى |[m
+[32m+[m[32m|---|---|[m
+[32m+[m[32m| ACL | قائمة تحكم وصول (Access Control List) تسمح/تمنع traffic. |[m
+[32m+[m[32m| APIPA | عنوان Windows ذاتي `169.254.0.0/16` عند فشل DHCP. |[m
+[32m+[m[32m| CIDR | تمثيل prefix مثل `/24` بدلاً من classful mask. |[m
+[32m+[m[32m| MTU | أكبر حجم packet/frame يمكن للواجهة تمريره بلا تجزئة. |[m
+[32m+[m[32m| PoE | Power over Ethernet؛ طاقة عبر كابل الشبكة. |[m
+[32m+[m[32m| RTT | Round-Trip Time؛ زمن الذهاب والعودة. |[m
+[1mdiff --git a/01-Networking/01-Fundamentals/commands.md b/01-Networking/01-Fundamentals/commands.md[m
+[1mindex a0b004d..9ec21bd 100644[m
+[1m--- a/01-Networking/01-Fundamentals/commands.md[m
+[1m+++ b/01-Networking/01-Fundamentals/commands.md[m
+[36m@@ -2627,4 +2627,122 @@[m [mBy mastering these commands, an IT professional can diagnose and resolve the maj[m
+ [m
+ ---[m
+ [m
+[31m-**End of Windows CMD Networking Commands**[m
+\ No newline at end of file[m
+[32m+[m[32m**End of Windows CMD Networking Commands**[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m# أوامر Enterprise الأساسية (Enterprise Command Playbook)[m
+[32m+[m
+[32m+[m[32m> نفّذ الأوامر بصلاحيات مناسبة، وسجّل الـ output في ticket. لا تستخدم أوامر reset أو تغييرات Cisco في الإنتاج قبل تحديد الأثر وخطة rollback.[m
+[32m+[m
+[32m+[m[32m## Windows PowerShell[m
+[32m+[m
+[32m+[m[32m| الهدف | الأمر | ماذا يثبت؟ |[m
+[32m+[m[32m|---|---|---|[m
+[32m+[m[32m| عرض التكوين الفعّال | `Get-NetIPConfiguration` | IPv4/IPv6، gateway، DNS، interface |[m
+[32m+[m[32m| فحص interfaces | `Get-NetAdapter` | الحالة والسرعة وMAC |[m
+[32m+[m[32m| اختبار DNS | `Resolve-DnsName erp.corp.example` | resolver والسجل وIP الناتج |[m
+[32m+[m[32m| اختبار TCP | `Test-NetConnection erp.corp.example -Port 443` | DNS، route، TCP port |[m
+[32m+[m[32m| عرض المسارات | `Get-NetRoute -AddressFamily IPv4` | route والـ next hop والـ metric |[m
+[32m+[m[32m| فحص sockets | `Get-NetTCPConnection -State Established` | الاتصالات والـ owning process |[m
+[32m+[m[32m| فحص ملف جدار ناري | `Get-NetFirewallProfile` | حالة Windows Firewall |[m
+[32m+[m
+[32m+[m[32m```powershell[m
+[32m+[m[32m# اجمع baseline قبل أي تغيير[m
+[32m+[m[32mGet-NetIPConfiguration[m
+[32m+[m[32mGet-NetAdapter | Format-Table Name, Status, LinkSpeed, MacAddress -Auto[m
+[32m+[m[32mGet-DnsClientServerAddress -AddressFamily IPv4[m
+[32m+[m[32mTest-NetConnection erp.corp.example -Port 443 -InformationLevel Detailed[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m### معالجة DNS بصورة آمنة[m
+[32m+[m
+[32m+[m[32m```powershell[m
+[32m+[m[32mResolve-DnsName erp.corp.example[m
+[32m+[m[32mClear-DnsClientCache[m
+[32m+[m[32mipconfig /registerdns[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32mلا تجعل `Clear-DnsClientCache` تشخيصاً وحيداً: قارن اسم FQDN بسجل DNS، وتحقق من DNS suffix وIPv4/IPv6 والـ forwarder.[m
+[32m+[m
+[32m+[m[32m## Windows CMD: تسلسل اختبار قابل لإعادة الاستخدام[m
+[32m+[m
+[32m+[m[32m```cmd[m
+[32m+[m[32mipconfig /all[m
+[32m+[m[32mping <default-gateway>[m
+[32m+[m[32mping <known-server-ip>[m
+[32m+[m[32mnslookup erp.corp.example[m
+[32m+[m[32mtracert -d <known-server-ip>[m
+[32m+[m[32mnetstat -ano | findstr :443[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m| نتيجة شائعة | التفسير الأولي | الخطوة التالية |[m
+[32m+[m[32m|---|---|---|[m
+[32m+[m[32m| `169.254.x.x` | DHCP lease غير متاح | افحص VLAN وDHCP scope/relay |[m
+[32m+[m[32m| gateway لا يرد | Layer 1/2 أو ACL أو gateway | افحص link/VLAN وswitch port |[m
+[32m+[m[32m| IP يعمل والاسم يفشل | DNS path/record/suffix | `nslookup` و`Resolve-DnsName` |[m
+[32m+[m[32m| TCP 443 يفشل وping ينجح | خدمة أو firewall/ACL | `Test-NetConnection` وlogs |[m
+[32m+[m
+[32m+[m[32m## Cisco IOS: أوامر تحقق آمنة (Read-only Verification)[m
+[32m+[m
+[32m+[m[32m```cisco[m
+[32m+[m[32mshow interfaces status[m
+[32m+[m[32mshow interfaces counters errors[m
+[32m+[m[32mshow ip interface brief[m
+[32m+[m[32mshow vlan brief[m
+[32m+[m[32mshow interfaces trunk[m
+[32m+[m[32mshow mac address-table dynamic[m
+[32m+[m[32mshow ip arp[m
+[32m+[m[32mshow ip route[m
+[32m+[m[32mshow cdp neighbors detail[m
+[32m+[m[32mshow logging[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m| الأمر | استخدامه في incident |[m
+[32m+[m[32m|---|---|[m
+[32m+[m[32m| `show interfaces counters errors` | كشف CRC/input errors وduplex/cable symptoms |[m
+[32m+[m[32m| `show vlan brief` | التأكد من VLAN الخاصة بمنفذ المستخدم |[m
+[32m+[m[32m| `show interfaces trunk` | التحقق من allowed VLANs وnative VLAN |[m
+[32m+[m[32m| `show mac address-table dynamic` | التحقق من تعلم MAC في المنفذ المتوقع |[m
+[32m+[m[32m| `show ip route` | إثبات وجود route قبل اتهام firewall |[m
+[32m+[m
+[32m+[m[32m### مثال Cisco: تشخيص جهاز Finance[m
+[32m+[m
+[32m+[m[32m```cisco[m
+[32m+[m[32mshow interfaces gigabitEthernet1/0/10 status[m
+[32m+[m[32mshow interfaces gigabitEthernet1/0/10 switchport[m
+[32m+[m[32mshow mac address-table interface gigabitEthernet1/0/10[m
+[32m+[m[32mshow interfaces counters errors[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m**تفسير:** إذا كان المنفذ up لكن VLAN ليست `20`، فالمشكلة Layer 2 وليست DNS. إذا ظهرت CRC errors متزايدة، اختبر الكابل والـ transceiver والسرعة/duplex قبل تغيير IP.[m
+[32m+[m
+[32m+[m[32m## Linux للمقارنة مع Windows[m
+[32m+[m
+[32m+[m[32m```bash[m
+[32m+[m[32mip address show[m
+[32m+[m[32mip route show[m
+[32m+[m[32mresolvectl query erp.corp.example[m
+[32m+[m[32mss -tulpn[m
+[32m+[m[32mping -c 4 <default-gateway>[m
+[32m+[m[32mtraceroute -n <server-ip>[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m## أوامر تتطلب حذراً (Change / Recovery Commands)[m
+[32m+[m
+[32m+[m[32m| الأمر | الأثر | قاعدة تشغيلية |[m
+[32m+[m[32m|---|---|---|[m
+[32m+[m[32m| `ipconfig /release` | يفصل lease الحالي | لا تنفذه على خادم إنتاج عن بعد |[m
+[32m+[m[32m| `netsh winsock reset` | يحتاج restart وقد يغيّر connectivity | بعد baseline وموافقة تغيير |[m
+[32m+[m[32m| `netsh int ip reset` | يعيد TCP/IP settings | استخدمه كآخر حل على endpoint |[m
+[32m+[m[32m| `shutdown` في Cisco | يقطع الخدمة | لا ينفذ إلا ضمن change مع rollback |[m
+[32m+[m
+[32m+[m[32m## أسئلة مقابلات للأوامر[m
+[32m+[m
+[32m+[m[32m### لماذا تفضّل `Test-NetConnection -Port 443` على `ping` لاختبار تطبيق ويب؟[m
+[32m+[m
+[32m+[m[32m**الإجابة:** لأنه يختبر مسار TCP والمنفذ الذي يستخدمه التطبيق، بينما `ping` يختبر ICMP فقط وقد يكون محجوباً أو مسموحاً بشكل مستقل عن HTTPS.[m
+[32m+[m
+[32m+[m[32m### ما الفرق بين `tracert` و`pathping`؟[m
+[32m+[m
+[32m+[m[32m**الإجابة:** `tracert` يعرض hops بسرعة، أما `pathping` فيجمع قياسات أطول لتقدير الفقد على المسار؛ لذلك الأخير أبطأ لكنه مفيد في التشخيص المتقطع.[m
+[1mdiff --git a/01-Networking/01-Fundamentals/lab-guide.md b/01-Networking/01-Fundamentals/lab-guide.md[m
+[1mindex 4ee6e08..8c3cfed 100644[m
+[1m--- a/01-Networking/01-Fundamentals/lab-guide.md[m
+[1m+++ b/01-Networking/01-Fundamentals/lab-guide.md[m
+[36m@@ -238,3 +238,131 @@[m [mAnswer the following:[m
+ 🎉 Congratulations![m
+ [m
+ You have completed the Networking Fundamentals Lab.[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m# Enterprise Labs | مختبرات Enterprise العملية[m
+[32m+[m
+[32m+[m[32m> نفّذ المختبرات في Packet Tracer أو EVE-NG/GNS3 وWindows 10/11 أو Windows Server. لا تطبقها مباشرة على شبكة الإنتاج.[m
+[32m+[m
+[32m+[m[32m## Lab 1 — بناء شبكة مستخدمين وخوادم (Cisco + Windows)[m
+[32m+[m
+[32m+[m[32m### الهدف[m
+[32m+[m
+[32m+[m[32mبناء VLAN للمستخدمين `20` وVLAN للخوادم `30`، وتكوين gateway على Layer 3 Switch ثم التحقق من اتصال Windows بخادم ويب.[m
+[32m+[m
+[32m+[m[32m### المخطط[m
+[32m+[m
+[32m+[m[32m```mermaid[m
+[32m+[m[32mflowchart LR[m
+[32m+[m[32m    PC[WIN-CLIENT\n10.20.20.10/24] -->|Access VLAN 20| SW[SW1 / Layer 3 Switch][m
+[32m+[m[32m    SW -->|SVI 10.20.20.1| PC[m
+[32m+[m[32m    SW -->|SVI 10.30.30.1| SRV[WEB-SRV\n10.30.30.10/24][m
+[32m+[m[32m    SRV -->|Access VLAN 30| SW[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m### جدول العناوين[m
+[32m+[m
+[32m+[m[32m| الجهاز | الواجهة/VLAN | IP address | Default gateway |[m
+[32m+[m[32m|---|---|---|---|[m
+[32m+[m[32m| WIN-CLIENT | VLAN 20 | `10.20.20.10/24` | `10.20.20.1` |[m
+[32m+[m[32m| SW1 | SVI VLAN 20 | `10.20.20.1/24` | — |[m
+[32m+[m[32m| SW1 | SVI VLAN 30 | `10.30.30.1/24` | — |[m
+[32m+[m[32m| WEB-SRV | VLAN 30 | `10.30.30.10/24` | `10.30.30.1` |[m
+[32m+[m
+[32m+[m[32m### خطوات Cisco[m
+[32m+[m
+[32m+[m[32m```cisco[m
+[32m+[m[32menable[m
+[32m+[m[32mconfigure terminal[m
+[32m+[m[32mvlan 20[m
+[32m+[m[32m name USERS[m
+[32m+[m[32mvlan 30[m
+[32m+[m[32m name SERVERS[m
+[32m+[m[32minterface gigabitEthernet1/0/10[m
+[32m+[m[32m switchport mode access[m
+[32m+[m[32m switchport access vlan 20[m
+[32m+[m[32m spanning-tree portfast[m
+[32m+[m[32minterface gigabitEthernet1/0/20[m
+[32m+[m[32m switchport mode access[m
+[32m+[m[32m switchport access vlan 30[m
+[32m+[m[32m spanning-tree portfast[m
+[32m+[m[32minterface vlan 20[m
+[32m+[m[32m ip address 10.20.20.1 255.255.255.0[m
+[32m+[m[32m no shutdown[m
+[32m+[m[32minterface vlan 30[m
+[32m+[m[32m ip address 10.30.30.1 255.255.255.0[m
+[32m+[m[32m no shutdown[m
+[32m+[m[32mip routing[m
+[32m+[m[32mend[m
+[32m+[m[32mwrite memory[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m### خطوات Windows والتحقق[m
+[32m+[m
+[32m+[m[32m```powershell[m
+[32m+[m[32mNew-NetIPAddress -InterfaceAlias 'Ethernet' -IPAddress 10.20.20.10 -PrefixLength 24 -DefaultGateway 10.20.20.1[m
+[32m+[m[32mTest-NetConnection 10.30.30.10[m
+[32m+[m[32mtracert -d 10.30.30.10[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m**معيار النجاح:** يصل `Test-NetConnection` إلى الخادم، ويظهر `show ip route` شبكتي VLAN كـ connected routes. وثّق output قبل الانتقال للمختبر التالي.[m
+[32m+[m
+[32m+[m[32m## Lab 2 — عزل عطل DHCP وDNS على Windows[m
+[32m+[m
+[32m+[m[32m### السيناريو[m
+[32m+[m
+[32m+[m[32mالمستخدم يحصل على `169.254.x.x` ولا يستطيع فتح `intranet.corp.example`. بعد تصحيح DHCP، يعمل `ping 10.30.30.10` لكن الاسم ما زال يفشل.[m
+[32m+[m
+[32m+[m[32m### الخطوات[m
+[32m+[m
+[32m+[m[32m1. سجّل baseline: `ipconfig /all` و`Get-NetIPConfiguration`.[m
+[32m+[m[32m2. تأكد من access VLAN ووجود DHCP scope/relay المناسبين؛ لا تعيّن IP ثابتاً كحل نهائي.[m
+[32m+[m[32m3. جدّد lease: `ipconfig /release` ثم `ipconfig /renew` في بيئة المختبر فقط.[m
+[32m+[m[32m4. اختبر `Resolve-DnsName intranet.corp.example` و`nslookup intranet.corp.example`.[m
+[32m+[m[32m5. أصلح A record أو DNS server assignment في المختبر ثم أعد الاختبار.[m
+[32m+[m
+[32m+[m[32m### أسئلة مراجعة[m
+[32m+[m
+[32m+[m[32m- ما الدليل الذي يثبت أن مشكلة APIPA مرتبطة بـ DHCP؟[m
+[32m+[m[32m- لماذا لا يحل نجاح ping إلى IP مشكلة DNS؟[m
+[32m+[m[32m- ما الفرق بين DNS record خاطئ وTCP/443 محجوب؟[m
+[32m+[m
+[32m+[m[32m## Lab 3 — تحليل Packet Flow في Wireshark[m
+[32m+[m
+[32m+[m[32m### الهدف[m
+[32m+[m
+[32m+[m[32mالتقاط DNS وTCP handshake ثم ربط كل packet بطبقة OSI المناسبة.[m
+[32m+[m
+[32m+[m[32m1. افتح Wireshark على واجهة المختبر وابدأ capture.[m
+[32m+[m[32m2. نفّذ `Resolve-DnsName example.com` ثم افتح موقع HTTPS مسموحاً.[m
+[32m+[m[32m3. استخدم filters: `dns`، ثم `tcp.flags.syn == 1`، ثم `tcp.port == 443`.[m
+[32m+[m[32m4. حدّد source/destination IP، source/destination port، وTCP flags.[m
+[32m+[m
+[32m+[m[32m| Evidence | الطبقة | التفسير |[m
+[32m+[m[32m|---|---|---|[m
+[32m+[m[32m| DNS query | L7 / L4 | اسم خدمة فوق UDP/TCP 53 |[m
+[32m+[m[32m| SYN, SYN-ACK, ACK | L4 | إنشاء TCP session |[m
+[32m+[m[32m| IPv4 header | L3 | عنوان منطقي وقابل للتوجيه |[m
+[32m+[m[32m| Ethernet header | L2 | MAC محلي يتغير عبر router |[m
+[32m+[m
+[32m+[m[32m## Lab 4 — تحدي تشخيص Cisco (Troubleshooting Challenge)[m
+[32m+[m
+[32m+[m[32m**العطل المقصود:** منفذ PC في VLAN 30 بدلاً من VLAN 20، والخادم متاح فقط من VLAN 20 وفق ACL.[m
+[32m+[m
+[32m+[m[32mاستخدم هذه الأوامر فقط أولاً:[m
+[32m+[m
+[32m+[m[32m```cisco[m
+[32m+[m[32mshow interfaces status[m
+[32m+[m[32mshow interfaces gigabitEthernet1/0/10 switchport[m
+[32m+[m[32mshow vlan brief[m
+[32m+[m[32mshow mac address-table interface gigabitEthernet1/0/10[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m**معيار النجاح:** اشرح لماذا كانت المشكلة Layer 2، نفّذ التعديل ضمن المختبر، ثم أثبت النتيجة باختبار IP وFQDN وTCP port.[m
+[32m+[m
+[32m+[m[32m## Cleanup | التنظيف[m
+[32m+[m
+[32m+[m[32m- احذف عناوين Windows الثابتة أو أعد الواجهة إلى DHCP بعد المختبر.[m
+[32m+[m[32m- احذف VLANs وSVIs التجريبية فقط بعد التأكد من أنها ليست مستخدمة في بيئة مشتركة.[m
+[32m+[m[32m- احفظ outputs وملف `.pkt`/topology مع اسم المختبر وتاريخه.[m
+[1mdiff --git a/01-Networking/01-Fundamentals/notes.md b/01-Networking/01-Fundamentals/notes.md[m
+[1mindex bd7faa0..159dce2 100644[m
+[1m--- a/01-Networking/01-Fundamentals/notes.md[m
+[1m+++ b/01-Networking/01-Fundamentals/notes.md[m
+[36m@@ -1661,4 +1661,94 @@[m [mThere, you will learn:[m
+ - Subnet Masks[m
+ - Subnetting[m
+ - VLSM[m
+[31m-- Route Summarization[m
+\ No newline at end of file[m
+[32m+[m[32m- Route Summarization[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m# ملاحظات احترافية لأساسيات الشبكات (Professional Notes)[m
+[32m+[m
+[32m+[m[32m## كيف تتخذ الأجهزة قرار الإرسال؟ (Local vs Remote Decision)[m
+[32m+[m
+[32m+[m[32mيقارن نظام التشغيل عنوان IP الهدف مع عنوانه وقناع الشبكة (**Subnet Mask / Prefix Length**). إذا كان الهدف محلياً، يبحث الجهاز عن MAC الهدف عبر ARP في IPv4. وإذا كان بعيداً، يبحث عن MAC البوابة الافتراضية ثم يضع **IP الهدف البعيد** داخل الحزمة و**MAC البوابة** داخل الإطار.[m
+[32m+[m
+[32m+[m[32m```mermaid[m
+[32m+[m[32mflowchart TD[m
+[32m+[m[32m    A[Application has destination IP] --> B{Same subnet?}[m
+[32m+[m[32m    B -->|Yes| C[ARP for destination MAC][m
+[32m+[m[32m    B -->|No| D[ARP for default gateway MAC][m
+[32m+[m[32m    C --> E[Send Ethernet frame][m
+[32m+[m[32m    D --> E[m
+[32m+[m[32m    E --> F[Switch forwards by MAC table][m
+[32m+[m[32m    F --> G[Router routes by destination IP][m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m```text[m
+[32m+[m[32mSource: 10.20.20.25/24        Destination: 10.30.30.50/24[m
+[32m+[m[32mDefault gateway: 10.20.20.1[m
+[32m+[m
+[32m+[m[32mIP packet:       10.20.20.25  ───────────────>  10.30.30.50[m
+[32m+[m[32mFirst L2 frame:  PC-MAC       ───────────────>  Gateway-MAC[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m## مقارنة TCP وUDP عملياً[m
+[32m+[m
+[32m+[m[32m| جانب المقارنة | TCP (Transmission Control Protocol) | UDP (User Datagram Protocol) |[m
+[32m+[m[32m|---|---|---|[m
+[32m+[m[32m| نوع الاتصال | Connection-oriented | Connectionless |[m
+[32m+[m[32m| الموثوقية | Sequence, ACK, retransmission | لا يوفرها افتراضياً |[m
+[32m+[m[32m| ترتيب البيانات | يحافظ على الترتيب | التطبيق يعالج الترتيب إن احتاجه |[m
+[32m+[m[32m| الاستخدامات | HTTPS، SMB، RDP، SQL | DNS، NTP، VoIP، streaming |[m
+[32m+[m[32m| خطأ شائع | اعتباره “بطيئاً” دائماً | اعتباره “غير موثوق” دائماً؛ التطبيق قد يضيف موثوقية |[m
+[32m+[m
+[32m+[m[32m## المثال المؤسسي: جهاز Windows لا يصل إلى ERP[m
+[32m+[m
+[32m+[m[32mيتبع المهندس طبقات الأدلة بدلاً من إعادة تشغيل كل شيء:[m
+[32m+[m
+[32m+[m[32m1. يتحقق من link وVLAN ومن أن NIC ليس Disabled.[m
+[32m+[m[32m2. يراجع IP وprefix وgateway وDNS باستخدام `Get-NetIPConfiguration`.[m
+[32m+[m[32m3. يختبر gateway ثم DNS ثم المنفذ `443` باستخدام `Test-NetConnection`.[m
+[32m+[m[32m4. يقارن جهازاً متأثراً بجهاز يعمل في VLAN نفسها.[m
+[32m+[m[32m5. يتحقق من Firewall policy، سجل DNS، وحالة خدمة ERP قبل تغيير الإعدادات.[m
+[32m+[m
+[32m+[m[32m## لماذا يتغير MAC ولا يتغير IP غالباً؟[m
+[32m+[m
+[32m+[m[32mيتحكم **Layer 2** في التسليم على الوصلة المحلية فقط. كل Router يزيل Ethernet frame القادم ويصنع frame جديداً للوصلة التالية. لذلك تتبدل MAC addresses عند كل hop؛ أما IP addresses فتمثل اتصالاً من المصدر إلى الوجهة. الاستثناءات المهمة: NAT وproxy وload balancer قد تعدّل عناوين IP أو المنافذ.[m
+[32m+[m
+[32m+[m[32m## مؤشرات الأداء (Performance Indicators)[m
+[32m+[m
+[32m+[m[32m| المؤشر | معنى عملي | مثال إنذار |[m
+[32m+[m[32m|---|---|---|[m
+[32m+[m[32m| Latency | زمن الاستجابة | ارتفاع ثابت إلى فرع محدد |[m
+[32m+[m[32m| Jitter | تذبذب latency | تقطع Microsoft Teams/VoIP |[m
+[32m+[m[32m| Packet loss | فقد الحزم | retransmissions وaudio drops |[m
+[32m+[m[32m| Errors/Discards | مشكلة كابل/NIC/duplex أو ازدحام | زيادة counters على منفذ switch |[m
+[32m+[m[32m| Utilization | نسبة استخدام الوصلة | uplink أعلى من 80% باستمرار |[m
+[32m+[m
+[32m+[m[32m## ملاحظات أمنية (Security Notes)[m
+[32m+[m
+[32m+[m[32m- لا تشغّل Telnet أو SNMPv1/v2c في الإنتاج؛ استخدم SSH وSNMPv3.[m
+[32m+[m[32m- لا تعطّل Windows Firewall أو Antivirus كحل دائم للتشخيص؛ أنشئ rule محددة ومؤقتة عند الضرورة.[m
+[32m+[m[32m- ضع شبكة الإدارة (Management VLAN) خلف ACL/MFA/jump host، ولا تستخدم VLAN 1 للمستخدمين.[m
+[32m+[m[32m- لا تنشر عناوين IP عامة أو كلمات مرور أو community strings في المستودع أو screenshots.[m
+[32m+[m
+[32m+[m[32m## أسئلة مقابلات مع الإجابات (Interview Questions and Answers)[m
+[32m+[m
+[32m+[m[32m### 1. ما الفرق بين Switch وRouter؟[m
+[32m+[m
+[32m+[m[32m**الإجابة:** يقوم Switch في Layer 2 بتوجيه frames داخل VLAN بالاعتماد على MAC table. أما Router أو Layer 3 Switch فيوجّه packets بين شبكات IP بالاعتماد على routing table. يمكن أن يجمع Layer 3 Switch الوظيفتين، لكن القرارين مختلفان.[m
+[32m+[m
+[32m+[m[32m### 2. لماذا قد يعمل `ping 8.8.8.8` بينما يفشل فتح موقع بالاسم؟[m
+[32m+[m
+[32m+[m[32m**الإجابة:** هذا يعزل المشكلة غالباً إلى DNS resolution أو proxy أو TLS/HTTPS، لأن اختبار IP يتجاوز تحويل الاسم. نتحقق بـ `Resolve-DnsName` أو `nslookup` ثم نختبر المنفذ المطلوب.[m
+[32m+[m
+[32m+[m[32m### 3. ما معنى عنوان 169.254.x.x؟[m
+[32m+[m
+[32m+[m[32m**الإجابة:** عنوان APIPA عيّنه Windows ذاتياً بعد فشل الحصول على lease من DHCP. نتحقق من VLAN، reachability إلى DHCP، scope، relay، والـ DHCP service قبل تنفيذ `ipconfig /renew` بشكل متكرر.[m
+[32m+[m
+[32m+[m[32m### 4. هل فشل Ping يعني أن الخادم متوقف؟[m
+[32m+[m
+[32m+[m[32m**الإجابة:** لا. قد يمنع ACL أو Windows Firewall رسائل ICMP. نستخدم اختبار TCP مثل `Test-NetConnection server -Port 443` ونفحص logs والخدمة الفعلية.[m
+[32m+[m
+[32m+[m[32m### 5. ما الفرق بين Bandwidth وThroughput؟[m
+[32m+[m
+[32m+[m[32m**الإجابة:** Bandwidth هي السعة النظرية، بينما Throughput هو معدل البيانات الناجحة الفعلي، ويتأثر بالترويسات والازدحام وإعادة الإرسال وقدرات التطبيق.[m
+[1mdiff --git a/01-Networking/01-Fundamentals/troubleshooting.md b/01-Networking/01-Fundamentals/troubleshooting.md[m
+[1mindex ba15f7b..091d270 100644[m
+[1m--- a/01-Networking/01-Fundamentals/troubleshooting.md[m
+[1m+++ b/01-Networking/01-Fundamentals/troubleshooting.md[m
+[36m@@ -93,3 +93,118 @@[m [mA structured method helps diagnose problems efficiently and prevents overlooking[m
+ *   `ipconfig`/`ifconfig`/`ip addr`: Check local configuration.[m
+ *   `tracert`/`traceroute`: Map network path.[m
+ *   `nslookup`: Test DNS resolution.[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m# Enterprise Troubleshooting Runbooks | أدلة التشخيص المؤسسية[m
+[32m+[m
+[32m+[m[32m## قاعدة العمل: اعزل ولا تخمّن[m
+[32m+[m
+[32m+[m[32mابدأ بتحديد النطاق: مستخدم واحد أم VLAN أم فرع أم خدمة؟ اجمع evidence قبل الإصلاح، وقارن endpoint متأثراً بآخر يعمل في الشبكة نفسها. لا تستخدم restart أو reset كخطوة أولى.[m
+[32m+[m
+[32m+[m[32m```mermaid[m
+[32m+[m[32mflowchart TD[m
+[32m+[m[32m    A[بلاغ: التطبيق لا يعمل] --> B{هل Link/NIC سليم؟}[m
+[32m+[m[32m    B -->|لا| C[L1: cable, Wi-Fi, port, NIC][m
+[32m+[m[32m    B -->|نعم| D{هل IP/prefix/gateway صحيح؟}[m
+[32m+[m[32m    D -->|لا| E[L3 local: DHCP, static config, VLAN][m
+[32m+[m[32m    D -->|نعم| F{هل IP target قابل للوصول؟}[m
+[32m+[m[32m    F -->|لا| G[Route, ACL, firewall, remote host][m
+[32m+[m[32m    F -->|نعم| H{هل DNS وTCP port يعملان؟}[m
+[32m+[m[32m    H -->|لا| I[DNS record/resolver or service policy][m
+[32m+[m[32m    H -->|نعم| J[L7: application, TLS, authentication][m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m## سيناريو 1: Windows يحصل على APIPA[m
+[32m+[m
+[32m+[m[32m| بند | التفاصيل |[m
+[32m+[m[32m|---|---|[m
+[32m+[m[32m| العرض | IP ضمن `169.254.0.0/16` ولا توجد gateway/DNS صحيحة |[m
+[32m+[m[32m| الاحتمالات | منفذ/VLAN خاطئ، DHCP scope ممتلئ، DHCP service متوقف، DHCP relay غائب |[m
+[32m+[m[32m| Evidence | `ipconfig /all`، `show vlan brief`، DHCP logs، scope utilization |[m
+[32m+[m[32m| الإصلاح | أصلح VLAN/relay/service/scope ثم اطلب lease جديداً |[m
+[32m+[m[32m| التحقق | IP من scope الصحيح، gateway reachable، DNS resolution ناجح |[m
+[32m+[m
+[32m+[m[32m```powershell[m
+[32m+[m[32mipconfig /all[m
+[32m+[m[32mipconfig /renew[m
+[32m+[m[32mGet-NetIPConfiguration[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m**ملاحظة:** لا تعتمد على static IP لتجاوز DHCP إلا كاختبار محدود ومصرح؛ فقد تخفي عطل البنية أو تسبب duplicate IP.[m
+[32m+[m
+[32m+[m[32m## سيناريو 2: يصل IP لكن لا يصل الاسم (DNS)[m
+[32m+[m
+[32m+[m[32m| الدليل | الاستنتاج |[m
+[32m+[m[32m|---|---|[m
+[32m+[m[32m| `ping 10.30.30.10` ينجح | L1–L3 إلى الخادم محتمل أن تكون سليمة |[m
+[32m+[m[32m| `Resolve-DnsName erp.corp.example` يفشل | resolver أو record أو suffix مشكلة محتملة |[m
+[32m+[m[32m| lookup ينجح لكن TCP/443 يفشل | DNS ليس السبب النهائي؛ افحص service/firewall |[m
+[32m+[m
+[32m+[m[32m```powershell[m
+[32m+[m[32mGet-DnsClientServerAddress[m
+[32m+[m[32mResolve-DnsName erp.corp.example[m
+[32m+[m[32mTest-NetConnection erp.corp.example -Port 443 -InformationLevel Detailed[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m## سيناريو 3: بطء متقطع وCRC errors على Cisco[m
+[32m+[m
+[32m+[m[32m| خطوة | الإجراء |[m
+[32m+[m[32m|---|---|[m
+[32m+[m[32m| 1 | قارن error counters مرتين بفاصل زمني، لا تعتمد على رقم تاريخي فقط. |[m
+[32m+[m[32m| 2 | افحص الكابل/patch panel/SFP وspeed/duplex في الطرفين. |[m
+[32m+[m[32m| 3 | افحص utilization وdrops ووجود loop/STP events. |[m
+[32m+[m[32m| 4 | استبدل عنصراً واحداً واختبر ثم وثق التغيير. |[m
+[32m+[m
+[32m+[m[32m```cisco[m
+[32m+[m[32mshow interfaces gigabitEthernet1/0/10[m
+[32m+[m[32mshow interfaces counters errors[m
+[32m+[m[32mshow logging | include STP|LINK|LINEPROTO[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m## سيناريو 4: المستخدم يصل إلى الخادم لكن التطبيق يفشل[m
+[32m+[m
+[32m+[m[32m**التمييز المهم:** نجاح ICMP لا يثبت TCP/UDP أو TLS أو حساب المستخدم.[m
+[32m+[m
+[32m+[m[32m```powershell[m
+[32m+[m[32mTest-NetConnection app01.corp.example -Port 443[m
+[32m+[m[32mGet-NetTCPConnection -RemotePort 443 -ErrorAction SilentlyContinue[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32mتحقق بالترتيب: DNS record → route → firewall/ACL → listening service → certificate/TLS → application authentication. أرفق وقت الاختبار وsource IP وdestination IP والمنفذ في التذكرة.[m
+[32m+[m
+[32m+[m[32m## سيناريو 5: جهاز في VLAN خاطئة[m
+[32m+[m
+[32m+[m[32m| العرض | الدليل | الحل |[m
+[32m+[m[32m|---|---|---|[m
+[32m+[m[32m| عنوان DHCP من شبكة مختلفة | DHCP scope لا يطابق القسم | تحقق من access VLAN في المنفذ |[m
+[32m+[m[32m| لا يصل إلى gateway المتوقع | `ipconfig` و`show interface switchport` مختلفان | صحح VLAN ثم renew lease |[m
+[32m+[m[32m| يعمل بعد النقل لمنفذ آخر | المشكلة تتبع المنفذ | راجع port template وMAC table |[m
+[32m+[m
+[32m+[m[32m```cisco[m
+[32m+[m[32mshow interfaces gigabitEthernet1/0/10 switchport[m
+[32m+[m[32mshow mac address-table interface gigabitEthernet1/0/10[m
+[32m+[m[32mshow vlan brief[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m## قالب توثيق Incident[m
+[32m+[m
+[32m+[m[32m```text[m
+[32m+[m[32mImpact: من المتأثر؟ وما الخدمة؟[m
+[32m+[m[32mScope: جهاز / VLAN / موقع / مؤسسة.[m
+[32m+[m[32mEvidence: أوامر، timestamps، counters، logs.[m
+[32m+[m[32mRoot cause: السبب المثبت، لا التخمين.[m
+[32m+[m[32mChange: ما الذي تغير ومن وافق عليه؟[m
+[32m+[m[32mVerification: IP + DNS + port + application test.[m
+[32m+[m[32mPrevention: monitoring، documentation، أو configuration hardening.[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m## أسئلة مقابلات تشخيصية[m
+[32m+[m
+[32m+[m[32m### كيف تشخّص “لا يوجد إنترنت” لمستخدم واحد؟[m
+[32m+[m
+[32m+[m[32m**الإجابة:** أحدد النطاق أولاً، ثم أتحقق من Layer 1 وNIC، ثم IP/prefix/gateway/DNS. أختبر gateway وknown IP وFQDN والمنفذ المطلوب، وأقارن بجهاز يعمل في VLAN نفسها. لا أعد تشغيل router أو أعطل firewall دون دليل.[m
+[32m+[m
+[32m+[m[32m### ما الفرق بين packet loss وlatency؟[m
+[32m+[m
+[32m+[m[32m**الإجابة:** latency هو زمن وصول الحزمة، بينما packet loss يعني أن الحزمة لم تصل. يمكن أن يكون latency منخفضاً مع loss، وكلاهما يؤثر في التطبيقات بطرق مختلفة؛ TCP يعيد الإرسال بينما VoIP قد يسبب تقطعاً مباشراً.[m

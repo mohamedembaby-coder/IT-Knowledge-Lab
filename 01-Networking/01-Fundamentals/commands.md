@@ -2628,3 +2628,121 @@ By mastering these commands, an IT professional can diagnose and resolve the maj
 ---
 
 **End of Windows CMD Networking Commands**
+
+---
+
+# أوامر Enterprise الأساسية (Enterprise Command Playbook)
+
+> نفّذ الأوامر بصلاحيات مناسبة، وسجّل الـ output في ticket. لا تستخدم أوامر reset أو تغييرات Cisco في الإنتاج قبل تحديد الأثر وخطة rollback.
+
+## Windows PowerShell
+
+| الهدف | الأمر | ماذا يثبت؟ |
+|---|---|---|
+| عرض التكوين الفعّال | `Get-NetIPConfiguration` | IPv4/IPv6، gateway، DNS، interface |
+| فحص interfaces | `Get-NetAdapter` | الحالة والسرعة وMAC |
+| اختبار DNS | `Resolve-DnsName erp.corp.example` | resolver والسجل وIP الناتج |
+| اختبار TCP | `Test-NetConnection erp.corp.example -Port 443` | DNS، route، TCP port |
+| عرض المسارات | `Get-NetRoute -AddressFamily IPv4` | route والـ next hop والـ metric |
+| فحص sockets | `Get-NetTCPConnection -State Established` | الاتصالات والـ owning process |
+| فحص ملف جدار ناري | `Get-NetFirewallProfile` | حالة Windows Firewall |
+
+```powershell
+# اجمع baseline قبل أي تغيير
+Get-NetIPConfiguration
+Get-NetAdapter | Format-Table Name, Status, LinkSpeed, MacAddress -Auto
+Get-DnsClientServerAddress -AddressFamily IPv4
+Test-NetConnection erp.corp.example -Port 443 -InformationLevel Detailed
+```
+
+### معالجة DNS بصورة آمنة
+
+```powershell
+Resolve-DnsName erp.corp.example
+Clear-DnsClientCache
+ipconfig /registerdns
+```
+
+لا تجعل `Clear-DnsClientCache` تشخيصاً وحيداً: قارن اسم FQDN بسجل DNS، وتحقق من DNS suffix وIPv4/IPv6 والـ forwarder.
+
+## Windows CMD: تسلسل اختبار قابل لإعادة الاستخدام
+
+```cmd
+ipconfig /all
+ping <default-gateway>
+ping <known-server-ip>
+nslookup erp.corp.example
+tracert -d <known-server-ip>
+netstat -ano | findstr :443
+```
+
+| نتيجة شائعة | التفسير الأولي | الخطوة التالية |
+|---|---|---|
+| `169.254.x.x` | DHCP lease غير متاح | افحص VLAN وDHCP scope/relay |
+| gateway لا يرد | Layer 1/2 أو ACL أو gateway | افحص link/VLAN وswitch port |
+| IP يعمل والاسم يفشل | DNS path/record/suffix | `nslookup` و`Resolve-DnsName` |
+| TCP 443 يفشل وping ينجح | خدمة أو firewall/ACL | `Test-NetConnection` وlogs |
+
+## Cisco IOS: أوامر تحقق آمنة (Read-only Verification)
+
+```cisco
+show interfaces status
+show interfaces counters errors
+show ip interface brief
+show vlan brief
+show interfaces trunk
+show mac address-table dynamic
+show ip arp
+show ip route
+show cdp neighbors detail
+show logging
+```
+
+| الأمر | استخدامه في incident |
+|---|---|
+| `show interfaces counters errors` | كشف CRC/input errors وduplex/cable symptoms |
+| `show vlan brief` | التأكد من VLAN الخاصة بمنفذ المستخدم |
+| `show interfaces trunk` | التحقق من allowed VLANs وnative VLAN |
+| `show mac address-table dynamic` | التحقق من تعلم MAC في المنفذ المتوقع |
+| `show ip route` | إثبات وجود route قبل اتهام firewall |
+
+### مثال Cisco: تشخيص جهاز Finance
+
+```cisco
+show interfaces gigabitEthernet1/0/10 status
+show interfaces gigabitEthernet1/0/10 switchport
+show mac address-table interface gigabitEthernet1/0/10
+show interfaces counters errors
+```
+
+**تفسير:** إذا كان المنفذ up لكن VLAN ليست `20`، فالمشكلة Layer 2 وليست DNS. إذا ظهرت CRC errors متزايدة، اختبر الكابل والـ transceiver والسرعة/duplex قبل تغيير IP.
+
+## Linux للمقارنة مع Windows
+
+```bash
+ip address show
+ip route show
+resolvectl query erp.corp.example
+ss -tulpn
+ping -c 4 <default-gateway>
+traceroute -n <server-ip>
+```
+
+## أوامر تتطلب حذراً (Change / Recovery Commands)
+
+| الأمر | الأثر | قاعدة تشغيلية |
+|---|---|---|
+| `ipconfig /release` | يفصل lease الحالي | لا تنفذه على خادم إنتاج عن بعد |
+| `netsh winsock reset` | يحتاج restart وقد يغيّر connectivity | بعد baseline وموافقة تغيير |
+| `netsh int ip reset` | يعيد TCP/IP settings | استخدمه كآخر حل على endpoint |
+| `shutdown` في Cisco | يقطع الخدمة | لا ينفذ إلا ضمن change مع rollback |
+
+## أسئلة مقابلات للأوامر
+
+### لماذا تفضّل `Test-NetConnection -Port 443` على `ping` لاختبار تطبيق ويب؟
+
+**الإجابة:** لأنه يختبر مسار TCP والمنفذ الذي يستخدمه التطبيق، بينما `ping` يختبر ICMP فقط وقد يكون محجوباً أو مسموحاً بشكل مستقل عن HTTPS.
+
+### ما الفرق بين `tracert` و`pathping`؟
+
+**الإجابة:** `tracert` يعرض hops بسرعة، أما `pathping` فيجمع قياسات أطول لتقدير الفقد على المسار؛ لذلك الأخير أبطأ لكنه مفيد في التشخيص المتقطع.
