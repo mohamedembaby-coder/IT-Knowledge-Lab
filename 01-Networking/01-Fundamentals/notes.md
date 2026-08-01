@@ -1662,3 +1662,93 @@ There, you will learn:
 - Subnetting
 - VLSM
 - Route Summarization
+
+---
+
+# ملاحظات احترافية لأساسيات الشبكات (Professional Notes)
+
+## كيف تتخذ الأجهزة قرار الإرسال؟ (Local vs Remote Decision)
+
+يقارن نظام التشغيل عنوان IP الهدف مع عنوانه وقناع الشبكة (**Subnet Mask / Prefix Length**). إذا كان الهدف محلياً، يبحث الجهاز عن MAC الهدف عبر ARP في IPv4. وإذا كان بعيداً، يبحث عن MAC البوابة الافتراضية ثم يضع **IP الهدف البعيد** داخل الحزمة و**MAC البوابة** داخل الإطار.
+
+```mermaid
+flowchart TD
+    A[Application has destination IP] --> B{Same subnet?}
+    B -->|Yes| C[ARP for destination MAC]
+    B -->|No| D[ARP for default gateway MAC]
+    C --> E[Send Ethernet frame]
+    D --> E
+    E --> F[Switch forwards by MAC table]
+    F --> G[Router routes by destination IP]
+```
+
+```text
+Source: 10.20.20.25/24        Destination: 10.30.30.50/24
+Default gateway: 10.20.20.1
+
+IP packet:       10.20.20.25  ───────────────>  10.30.30.50
+First L2 frame:  PC-MAC       ───────────────>  Gateway-MAC
+```
+
+## مقارنة TCP وUDP عملياً
+
+| جانب المقارنة | TCP (Transmission Control Protocol) | UDP (User Datagram Protocol) |
+|---|---|---|
+| نوع الاتصال | Connection-oriented | Connectionless |
+| الموثوقية | Sequence, ACK, retransmission | لا يوفرها افتراضياً |
+| ترتيب البيانات | يحافظ على الترتيب | التطبيق يعالج الترتيب إن احتاجه |
+| الاستخدامات | HTTPS، SMB، RDP، SQL | DNS، NTP، VoIP، streaming |
+| خطأ شائع | اعتباره “بطيئاً” دائماً | اعتباره “غير موثوق” دائماً؛ التطبيق قد يضيف موثوقية |
+
+## المثال المؤسسي: جهاز Windows لا يصل إلى ERP
+
+يتبع المهندس طبقات الأدلة بدلاً من إعادة تشغيل كل شيء:
+
+1. يتحقق من link وVLAN ومن أن NIC ليس Disabled.
+2. يراجع IP وprefix وgateway وDNS باستخدام `Get-NetIPConfiguration`.
+3. يختبر gateway ثم DNS ثم المنفذ `443` باستخدام `Test-NetConnection`.
+4. يقارن جهازاً متأثراً بجهاز يعمل في VLAN نفسها.
+5. يتحقق من Firewall policy، سجل DNS، وحالة خدمة ERP قبل تغيير الإعدادات.
+
+## لماذا يتغير MAC ولا يتغير IP غالباً؟
+
+يتحكم **Layer 2** في التسليم على الوصلة المحلية فقط. كل Router يزيل Ethernet frame القادم ويصنع frame جديداً للوصلة التالية. لذلك تتبدل MAC addresses عند كل hop؛ أما IP addresses فتمثل اتصالاً من المصدر إلى الوجهة. الاستثناءات المهمة: NAT وproxy وload balancer قد تعدّل عناوين IP أو المنافذ.
+
+## مؤشرات الأداء (Performance Indicators)
+
+| المؤشر | معنى عملي | مثال إنذار |
+|---|---|---|
+| Latency | زمن الاستجابة | ارتفاع ثابت إلى فرع محدد |
+| Jitter | تذبذب latency | تقطع Microsoft Teams/VoIP |
+| Packet loss | فقد الحزم | retransmissions وaudio drops |
+| Errors/Discards | مشكلة كابل/NIC/duplex أو ازدحام | زيادة counters على منفذ switch |
+| Utilization | نسبة استخدام الوصلة | uplink أعلى من 80% باستمرار |
+
+## ملاحظات أمنية (Security Notes)
+
+- لا تشغّل Telnet أو SNMPv1/v2c في الإنتاج؛ استخدم SSH وSNMPv3.
+- لا تعطّل Windows Firewall أو Antivirus كحل دائم للتشخيص؛ أنشئ rule محددة ومؤقتة عند الضرورة.
+- ضع شبكة الإدارة (Management VLAN) خلف ACL/MFA/jump host، ولا تستخدم VLAN 1 للمستخدمين.
+- لا تنشر عناوين IP عامة أو كلمات مرور أو community strings في المستودع أو screenshots.
+
+## أسئلة مقابلات مع الإجابات (Interview Questions and Answers)
+
+### 1. ما الفرق بين Switch وRouter؟
+
+**الإجابة:** يقوم Switch في Layer 2 بتوجيه frames داخل VLAN بالاعتماد على MAC table. أما Router أو Layer 3 Switch فيوجّه packets بين شبكات IP بالاعتماد على routing table. يمكن أن يجمع Layer 3 Switch الوظيفتين، لكن القرارين مختلفان.
+
+### 2. لماذا قد يعمل `ping 8.8.8.8` بينما يفشل فتح موقع بالاسم؟
+
+**الإجابة:** هذا يعزل المشكلة غالباً إلى DNS resolution أو proxy أو TLS/HTTPS، لأن اختبار IP يتجاوز تحويل الاسم. نتحقق بـ `Resolve-DnsName` أو `nslookup` ثم نختبر المنفذ المطلوب.
+
+### 3. ما معنى عنوان 169.254.x.x؟
+
+**الإجابة:** عنوان APIPA عيّنه Windows ذاتياً بعد فشل الحصول على lease من DHCP. نتحقق من VLAN، reachability إلى DHCP، scope، relay، والـ DHCP service قبل تنفيذ `ipconfig /renew` بشكل متكرر.
+
+### 4. هل فشل Ping يعني أن الخادم متوقف؟
+
+**الإجابة:** لا. قد يمنع ACL أو Windows Firewall رسائل ICMP. نستخدم اختبار TCP مثل `Test-NetConnection server -Port 443` ونفحص logs والخدمة الفعلية.
+
+### 5. ما الفرق بين Bandwidth وThroughput؟
+
+**الإجابة:** Bandwidth هي السعة النظرية، بينما Throughput هو معدل البيانات الناجحة الفعلي، ويتأثر بالترويسات والازدحام وإعادة الإرسال وقدرات التطبيق.

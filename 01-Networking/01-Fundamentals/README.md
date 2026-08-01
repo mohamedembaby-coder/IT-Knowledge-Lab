@@ -189,4 +189,93 @@ This section provides links to supplementary materials that will aid in your lea
 
 *   **الوحدة:** نموذج OSI
     *   **الوصف:** تعمق في تفاصيل نموذج الربط المفتوح للأنظمة (OSI)، وفهم وظيفة كل طبقة وكيفية تفاعلها.
-    *   **الرابط:** [01-Networking/02-OSI-Model/README.md](01-Networking/02-OSI-Model/README.md)
+*   **الرابط:** [01-Networking/02-OSI-Model/README.md](01-Networking/02-OSI-Model/README.md)
+
+---
+
+# Enterprise Foundation | الأساس المؤسسي
+
+> يقدّم هذا القسم الصورة العملية التي يحتاجها مهندس الدعم أو الشبكات في بيئة **Enterprise Network**. لا يحل محل الوحدات اللاحقة المتخصصة؛ بل يربط المفاهيم الأساسية بسيناريو عمل حقيقي.
+
+## رحلة طلب المستخدم (User Request Journey)
+
+عندما يفتح مستخدم تطبيقاً داخلياً مثل `https://erp.corp.example`، تتعاون طبقات وأجهزة متعددة. نجاح `ping` وحده لا يثبت أن التطبيق يعمل، لأن التطبيق يعتمد أيضاً على DNS وTCP وTLS والمنفذ والخدمة نفسها.
+
+```mermaid
+flowchart LR
+    U[Windows Client] -->|DNS query UDP/TCP 53| D[DNS Server]
+    U -->|ARP for default gateway| S[Access Switch]
+    S --> G[Default Gateway / L3 Switch]
+    G --> F[Firewall]
+    F --> A[ERP Application Server]
+    D -->|A/AAAA record| U
+    A -->|HTTPS TCP 443| U
+```
+
+```text
+PC-01 ── Access Port ── SW-Access ── Trunk ── L3 Switch ── Firewall ── ERP
+  |                         |                |                 |
+ NIC/MAC                  VLAN 20        Gateway .1        Policy + NAT
+```
+
+## مقارنة تشغيلية (Operational Comparison)
+
+| العنصر | العربية | English term | كيف يستخدمه المهندس؟ |
+|---|---|---|---|
+| العنوان المنطقي | يحدد موقع الجهاز بين الشبكات | IP address | route traffic إلى شبكة أخرى |
+| العنوان الفيزيائي | يحدد واجهة الشبكة محلياً | MAC address | switch forwarding داخل VLAN |
+| البوابة الافتراضية | أول قفزة خارج الشبكة المحلية | Default gateway | إرسال traffic إلى شبكات بعيدة |
+| المنفذ | يحدد الخدمة داخل الجهاز | TCP/UDP port | التحقق من HTTPS 443 أو DNS 53 |
+| اسم المضيف | اسم قابل للقراءة بدلاً من IP | FQDN / hostname | DNS resolution وتسجيل الأحداث |
+
+## مثال Cisco وWindows من مؤسسة
+
+لدى شركة قسمان: Finance في `VLAN 20` وHR في `VLAN 30`. يقوم Cisco Layer 3 Switch بتوجيه الشبكات، بينما يمنع Firewall الوصول غير المصرح به بين الأقسام. جهاز Windows في Finance يحصل على إعداداته من DHCP ويستخدم DNS الداخلي للوصول إلى ERP.
+
+```cisco
+interface GigabitEthernet1/0/10
+ description FIN-PC-01
+ switchport mode access
+ switchport access vlan 20
+ spanning-tree portfast
+
+interface Vlan20
+ ip address 10.20.20.1 255.255.255.0
+```
+
+```powershell
+Get-NetIPConfiguration
+Resolve-DnsName erp.corp.example
+Test-NetConnection erp.corp.example -Port 443
+```
+
+## ملاحظات CCNA (CCNA Exam Notes)
+
+- يعمل **Switch** عادةً في Layer 2 ويستخدم جدول MAC، بينما يختار **Router / Layer 3 Switch** المسار باستخدام جدول التوجيه (Routing Table).
+- يغيّر الراوتر إطار Layer 2 في كل hop، لكن عنواني IP للمصدر والوجهة يظلان غالباً كما هما من طرف إلى طرف، ما لم يحدث NAT.
+- `169.254.0.0/16` هو عنوان **APIPA** في Windows ويشير غالباً إلى فشل DHCP، وليس بديلاً عن عنوان مؤسسة صحيح.
+- DNS يستخدم UDP/53 غالباً، وقد يستخدم TCP/53 للردود الكبيرة أو zone transfer. لا تفترض أن DNS “UDP فقط”.
+- ICMP مفيد للتشخيص، لكن نجاح أو فشل `ping` ليس دليلاً قاطعاً على توفر تطبيق TCP/UDP.
+
+## أفضل الممارسات (Best Practices)
+
+1. وثّق VLAN، subnet، gateway، DNS، المالك، والغرض من كل شبكة في IP Address Management (IPAM).
+2. استخدم DHCP reservations للخوادم والطابعات والبنية التحتية عند الحاجة؛ لا توزع عناوين ثابتة بلا سجل.
+3. استخدم NTP، DNS داخلياً موثوقاً، وSNMPv3/Syslog للمراقبة بدلاً من الاعتماد على ملاحظات المستخدمين.
+4. افصل شبكات المستخدمين والخوادم والطابعات والضيوف والإدارة باستخدام VLANs وfirewall policies.
+5. اختبر التغيير في نافذة Change Management، وخذ نسخة إعدادات (configuration backup) قبل تعديل Cisco أو Firewall.
+
+## قاموس أساسي (Glossary)
+
+| المصطلح | التعريف المختصر |
+|---|---|
+| **Bandwidth** | السعة النظرية للوصلة، مثل 1 Gbps. |
+| **Throughput** | المعدل الفعلي للبيانات الناجحة بعد الحمل والترويسات والأخطاء. |
+| **Latency** | زمن انتقال الحزمة من مصدر إلى وجهة. |
+| **Jitter** | تباين زمن الوصول؛ مهم لـ VoIP والفيديو. |
+| **Packet loss** | حزم لم تصل؛ يسبب إعادة إرسال أو تقطعاً بحسب البروتوكول. |
+| **Duplex** | أسلوب الإرسال Half/Full؛ عدم التطابق يسبب بطئاً وأخطاء. |
+| **FQDN** | الاسم الكامل مثل `server01.corp.example`. |
+| **NIC** | بطاقة/واجهة الشبكة (Network Interface Card). |
+
+> **صورة مقترحة (Image Placeholder):** لقطة موثقة لطوبولوجيا Access–Distribution–Core توضح VLANs وFirewall وWindows Server. أضف صورة أصلية أو مرخصة لاحقاً في `images/` مع وصف بديل (alt text).
