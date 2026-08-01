@@ -8184,3 +8184,164 @@ The Network Address plus one.
 
 After completing the above, create a separate file:
 lab-guide.md
+
+---
+
+# Enterprise Layer Reference | المرجع المؤسسي للطبقات السبع
+
+> يكمّل هذا المرجع المادة التفصيلية السابقة بجدول تشغيلي موحّد: **الغرض، الأجهزة، البروتوكولات، PDU، العنونة، المثال، العطل، ودليل التشخيص**. في الواقع، قد يمتد منتج واحد عبر طبقات متعددة؛ استخدم التصنيف لفهم وظيفة المشكلة لا لوضع حدود مصطنعة.
+
+## ملخص الطبقات (Seven-Layer Matrix)
+
+| Layer | الغرض | PDU | Addressing | الدليل الأول |
+|---:|---|---|---|---|
+| 7 Application | خدمة تطبيق الشبكة | Data | FQDN/URL | DNS/app logs |
+| 6 Presentation | التشفير والترميز | Data | — | TLS/certificate |
+| 5 Session | إدارة الجلسة | Data | Session ID | session/auth logs |
+| 4 Transport | النقل والمنافذ | Segment/Datagram | TCP/UDP port | port test/socket |
+| 3 Network | IP والتوجيه | Packet | IPv4/IPv6 | gateway/route |
+| 2 Data Link | MAC وVLAN | Frame | MAC/VLAN ID | switchport/MAC table |
+| 1 Physical | الإشارة والوسيط | Bits | — | link/cable/RF |
+
+## Layer 7 — Application Layer | طبقة التطبيقات
+
+**الغرض (Purpose):** تقدّم خدمة الشبكة للتطبيق، مثل طلب صفحة ويب أو حل اسم أو إرسال بريد. الطبقة ليست Google Chrome أو Outlook نفسهما؛ بل الخدمات والبروتوكولات التي تستخدمها التطبيقات.
+
+| عنصر | التفاصيل |
+|---|---|
+| Devices | proxy، reverse proxy، WAF، DNS server، application server |
+| Protocols | HTTP/HTTPS، DNS، SMTP، IMAP، SMB، SSH، SNMP |
+| PDU | Data |
+| Addressing | FQDN، URL، URI، اسم service |
+| Enterprise example | موظف يصل إلى `https://erp.corp.example` عبر DNS ثم HTTPS وSSO |
+| Common failures | سجل DNS خاطئ، service متوقفة، proxy policy، خطأ HTTP 401/403/500 |
+
+**Troubleshooting tips:** ابدأ بـ `Resolve-DnsName`، ثم اختبر المنفذ لا ICMP فقط، ثم راجع HTTP status/application logs. إذا نجح IP وفشل الاسم، فلا تفترض أن firewall هو السبب الأول.
+
+## Layer 6 — Presentation Layer | طبقة العرض
+
+**الغرض:** توحيد تمثيل البيانات بين الأنظمة عبر التشفير (**Encryption**)، فك التشفير، الضغط (**Compression**)، والترميز (**Encoding**). في الشبكات الحديثة تظهر مسؤولياتها غالباً ضمن TLS أو التطبيق نفسه.
+
+| عنصر | التفاصيل |
+|---|---|
+| Devices | TLS termination load balancer، reverse proxy، application gateway |
+| Protocols/Formats | TLS، X.509 certificates، UTF-8، JSON، JPEG، gzip |
+| PDU | Data |
+| Addressing | لا تستخدم address مستقلاً |
+| Enterprise example | TLS inspection/termination أمام بوابة HR مع شهادة مؤسسية |
+| Common failures | certificate expired، name mismatch، protocol/cipher mismatch، encoding issue |
+
+**Troubleshooting tips:** تحقق من FQDN داخل الشهادة ووقت الجهاز وcertificate chain وTLS version. لا تعطّل certificate validation كإصلاح دائم.
+
+## Layer 5 — Session Layer | طبقة الجلسة
+
+**الغرض:** إنشاء الجلسة وإدارتها وإنهاؤها بين التطبيقات؛ مثل الحفاظ على سياق المصادقة أو استئناف جلسة. غالباً تتداخل مع Layer 7 في بروتوكولات الويب الحديثة.
+
+| عنصر | التفاصيل |
+|---|---|
+| Devices | session gateway، application server، remote desktop gateway |
+| Protocols/Concepts | RPC، NetBIOS session، SMB session، cookies/tokens conceptually |
+| PDU | Data |
+| Addressing | Session ID، token، connection context |
+| Enterprise example | جلسة RDP أو تطبيق ERP تنقطع بعد inactivity timeout |
+| Common failures | session timeout، load balancer غير sticky، expired token، clock skew |
+
+**Troubleshooting tips:** قارن وقت الانقطاع مع idle timeout، تحقق من session affinity في load balancer، وافحص time synchronization (NTP) قبل اتهام الشبكة.
+
+## Layer 4 — Transport Layer | طبقة النقل
+
+**الغرض:** نقل البيانات end-to-end باستخدام ports. TCP يضيف connection establishment والموثوقية والترتيب؛ UDP يفضّل البساطة والـ low latency.
+
+| عنصر | TCP | UDP |
+|---|---|---|
+| PDU | Segment | Datagram |
+| Addressing | Source/destination port | Source/destination port |
+| Examples | HTTPS 443، SMB 445، RDP 3389 | DNS 53، NTP 123، VoIP |
+| Failure examples | SYN timeout، reset، retransmission | loss/jitter، blocked UDP |
+
+**Enterprise example:** ينجح `ping app01` لكن `Test-NetConnection app01 -Port 443` يفشل. هذا دليل Layer 4/firewall/service، وليس دليلاً على فشل IP routing.
+
+**Troubleshooting tips:** افحص port من جهة العميل، listener من جهة الخادم، ACL/firewall في الوسط، ثم packet capture عند الحاجة. لا تستخدم port scan في بيئة الإنتاج دون تفويض.
+
+## Layer 3 — Network Layer | طبقة الشبكة
+
+**الغرض:** العنوان المنطقي والتوجيه (**Routing**) بين الشبكات. يختار Router أو Layer 3 Switch next hop بناءً على destination IP وأطول prefix match.
+
+| عنصر | التفاصيل |
+|---|---|
+| Devices | router، Layer 3 switch، firewall، cloud router |
+| Protocols | IPv4، IPv6، ICMP، OSPF، BGP، IPsec concepts |
+| PDU | Packet |
+| Addressing | IPv4/IPv6 address، prefix، default gateway |
+| Enterprise example | VLAN 20 `10.20.20.0/24` تصل إلى server VLAN 30 عبر SVIs |
+| Common failures | IP/prefix خاطئ، default gateway مفقودة، route غير موجود، ACL/NAT غير صحيح |
+
+**Troubleshooting tips:** أثبت local IP/prefix/gateway أولاً، ثم افحص routing table وtraceroute وICMP بحذر. تذكّر أن Router يكتب L2 frame جديداً في كل hop، بينما يبقى IP end-to-end عادةً قبل NAT.
+
+## Layer 2 — Data Link Layer | طبقة ربط البيانات
+
+**الغرض:** نقل frame داخل الشبكة المحلية باستخدام MAC address، VLAN، switching، واكتشاف أخطاء frame. تنقسم عادةً إلى LLC وMAC sublayers.
+
+| عنصر | التفاصيل |
+|---|---|
+| Devices | switch، bridge، NIC، wireless access point |
+| Protocols | Ethernet (802.3)، 802.1Q، STP/RSTP، LACP، ARP at L2/L3 boundary |
+| PDU | Frame |
+| Addressing | MAC address وVLAN ID |
+| Enterprise example | منفذ مستخدم في access VLAN 20، وuplink trunk ينقل VLAN 20 و30 |
+| Common failures | VLAN mismatch، native VLAN mismatch، STP block/loop، MAC flapping، duplex mismatch |
+
+**Troubleshooting tips:** تحقق من port status وaccess VLAN وtrunk allowed VLANs وMAC table وSTP state. ARP request broadcast داخل VLAN فقط؛ Router لا يمرره إلى VLAN أخرى.
+
+## Layer 1 — Physical Layer | الطبقة الفيزيائية
+
+**الغرض:** إرسال bits عبر النحاس أو الألياف أو الموجات اللاسلكية. لا تفهم هذه الطبقة IP أو MAC؛ همها signal، speed، duplex، transceiver، وRF.
+
+| عنصر | التفاصيل |
+|---|---|
+| Devices | cable، patch panel، SFP، hub، repeater، NIC PHY، radio/AP |
+| Standards | 1000BASE-T، 10GBASE-SR، fiber SM/MM، 802.11 PHY |
+| PDU | Bits |
+| Addressing | لا يوجد |
+| Enterprise example | uplink fiber بين طابقين يحمل VLANs عبر trunk |
+| Common failures | cable damaged، wrong optic، low Wi-Fi RSSI، CRC errors، speed/duplex mismatch |
+
+**Troubleshooting tips:** افحص LEDs وlink status وspeed/duplex وerror counters وSFP compatibility. استبدل أو اختبر عنصراً واحداً في كل مرة وسجّل counters قبل/بعد.
+
+## تسلسل تشخيص مؤسسي (Layered Troubleshooting)
+
+```mermaid
+flowchart TD
+    A[Symptom and scope] --> B[L1: link, power, cable, RF]
+    B --> C[L2: VLAN, MAC, STP, trunk]
+    C --> D[L3: IP, prefix, gateway, route]
+    D --> E[L4: TCP/UDP port, firewall, session]
+    E --> F[L5-L7: DNS, TLS, authentication, service]
+    F --> G[Verify, document, prevent recurrence]
+```
+
+## CCNA Notes | ملاحظات CCNA
+
+- احفظ وظيفة وPDU وaddressing لكل طبقة، لكن اشرح العلاقة بدلاً من حفظ أسماء فقط.
+- Hub لا يتعلم MAC ولا يفصل collision domains؛ Switch يفصل collision domains، وRouter يفصل broadcast domains.
+- Layer 2 switch لا يوجه بين VLANs دون Layer 3 SVI/router-on-a-stick.
+- TCP three-way handshake: SYN → SYN-ACK → ACK. إنهاء TCP المعتاد يستخدم FIN/ACK exchange.
+- IPv6 يستخدم Neighbor Discovery بدلاً من ARP، لكن المبدأ التشغيلي للـ L2 next-hop يبقى مهماً.
+
+## Interview Questions and Answers | أسئلة مقابلات وإجابات
+
+### ما الفرق العملي بين Layer 2 وLayer 3؟
+
+**الإجابة:** Layer 2 تنقل frame داخل broadcast domain باستخدام MAC/VLAN، بينما Layer 3 توجّه packet بين شبكات IP باستخدام routing table. يحتاج انتقال VLAN إلى أخرى إلى جهاز Layer 3.
+
+### لماذا قد ينجح DNS لكن يفشل HTTPS؟
+
+**الإجابة:** DNS يثبت أن name resolution يعمل، لكنه لا يثبت TCP/443 أو firewall أو TLS certificate أو web service. أختبر `Test-NetConnection` ثم logs والشهادة.
+
+### ما الذي يتغير عند عبور Router؟
+
+**الإجابة:** تتغير Ethernet source/destination MAC addresses في الوصلة التالية ويقل TTL. عنوانا IP للمصدر والوجهة لا يتغيران غالباً إلا عند NAT أو proxy.
+
+### كيف تميّز بين VLAN issue وDNS issue؟
+
+**الإجابة:** أبدأ بعنوان العميل وgateway وswitchport VLAN وMAC table. VLAN خاطئة عادة تمنح DHCP scope أو gateway غير صحيحين؛ DNS issue يسمح غالباً بالوصول إلى IP الصحيح بينما يفشل FQDN.
