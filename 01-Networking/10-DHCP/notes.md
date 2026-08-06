@@ -20,6 +20,16 @@ Option 82 يضيف relay/switch معلومات عن مكان العميل، مث
 
 Windows DHCP failover يمكن أن يستخدم load balance أو hot standby بين serverين لنفس scopes. لا تخلط leases يدوياً بين servers؛ صمم peer relationship، firewall/DNS/AD requirements، monitoring، وخطوات recovery حسب توثيق المنصة. DHCP على Cisco IOS أو Linux يحتاج نموذج redundancy مختلفاً بحسب software.
 
+## Kea وISC DHCP: Operational Notes
+
+**Kea DHCP** يعتمد غالباً على JSON configuration وlogging قابل للضبط وlease backend اختياري. افحص configuration بصيغة الاختبار التي توفرها الحزمة قبل restart، ثم راقب journal/logs وملف/قاعدة بيانات leases؛ نجاح syntax لا يثبت أن relay أو firewall أو subnet-selection صحيح. عند استخدام HA hooks، تأكد أن الحزمة المرخّصة/المعتمدة تتضمنها وأن peer state مراقب.
+
+**ISC DHCP (dhcpd)** قد يبقى في بيئات legacy. ترتيبه declarative: `subnet` يحدد الشبكة والـ range، و`option routers` و`option domain-name-servers` يحددان options. استخدم `dhcpd -t -cf <file>` للتحقق قبل restart حيث يتوفر. لا تنقل configuration بين ISC وKea حرفياً: syntax، lease storage، وHA behaviour مختلفة.
+
+## DHCPv6 Exam Boundary
+
+DHCPv6 uses UDP `546/547` and multicast; it does not use IPv4 DORA broadcast behaviour. Router Advertisements carry the default-gateway information. RA flags: `M` means managed address configuration, while `O` means other configuration is available. In troubleshooting, capture ICMPv6 RA traffic as well as DHCPv6; seeing a DHCPv6 reply alone does not prove the client learned a usable default route.
+
 ## Wireshark Reading Order
 
 ابدأ من أول Discover للـ MAC أو `xid` نفسه، ثم اربط Offer وRequest وACK. تحقق أن Offer جاء من server مقصود، وأن Request اختار Option 54 نفسه، وأن ACK يحوي mask/router/DNS المتوقعة. وجود Discover فقط يشير غالباً إلى VLAN/relay/path؛ وجود ACK لكن client بلا اتصال يشير إلى options، VLAN port، duplicate IP، أو policy لاحقة.

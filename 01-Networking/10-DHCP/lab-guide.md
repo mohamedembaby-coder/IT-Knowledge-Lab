@@ -45,6 +45,20 @@ interface Vlan20
 
 حرر/جدّد client lease. أثبت أن DHCP server يختار scope الصحيح عبر `giaddr`، ثم اختبر ping إلى gateway وDNS lookup إن توفر.
 
+### Windows Server implementation (optional)
+
+على DHCP01 (Windows Server)، ثبّت DHCP role وauthorize server في AD فقط إذا كانت بيئة المختبر domain-joined. أنشئ scope ثم اضبط scope options:
+
+```powershell
+Add-DhcpServerv4Scope -Name 'USERS-10' -StartRange 10.10.10.50 -EndRange 10.10.10.220 -SubnetMask 255.255.255.0 -State Active
+Set-DhcpServerv4OptionValue -ScopeId 10.10.10.0 -Router 10.10.10.1 -DnsServer 10.10.100.10 -DnsDomain 'corp.example'
+Get-DhcpServerv4ScopeStatistics
+```
+
+### Kea implementation (optional)
+
+إذا استخدمت Kea بدلاً من Windows، عرّف subnet `10.10.10.0/24` وpool `.50-.220` وخيار routers/DNS في `kea-dhcp4.conf`، ثم اختبر syntax قبل restart. استخدم ملف المثال في `labs/kea-dhcp4.conf` كنقطة بداية، وعدّل العناوين فقط للـ lab. لا تشغّل Kea وWindows/Cisco local DHCP لنفس scope في الوقت نفسه.
+
 ## Part 3: Exclusion and Reservation
 
 1. استثنِ `.1-.49` في كل scope لأجهزة البنية التحتية.
@@ -68,6 +82,14 @@ interface GigabitEthernet1/0/10
 ```
 
 تحقق من bindings. لا توصل rogue DHCP فعلياً؛ بدلاً من ذلك راجع أن access port غير trusted وأن uplink الشرعي فقط trusted. إن كان platform يدعم DAI/IP Source Guard، ادرس binding dependency قبل تفعيله.
+
+## Part 6: Failure and Evidence Drill
+
+1. ابدأ capture على client أو relay وحدد baseline DORA ناجحاً باستخدام `dhcp || bootp`.
+2. أوقف scope **أو** احذف helper مؤقتاً في المختبر فقط؛ نفّذ renew وسجّل آخر packet ظاهر والوقت.
+3. أعد scope/helper، نفذ renew، وقارن `xid` و`giaddr` وOption 3/6 بين الحالة الفاشلة والناجحة.
+4. إن استخدمت Windows، راجع lease وscope statistics. إن استخدمت Kea/ISC، راجع service journal وconfiguration test output.
+5. أعد كل إعدادات lab إلى الحالة العاملة قبل متابعة بقية التمارين.
 
 ## Success Criteria and Cleanup
 
