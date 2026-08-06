@@ -25,3 +25,5 @@ __pycache__/
 # OS
 .DS_Store
 .aider*
+.aider.chat.history.md
+.aider.tags.cache.v4
