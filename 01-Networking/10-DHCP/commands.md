@@ -102,6 +102,43 @@ sudo tcpdump -ni eth0 -vv 'udp port 67 or udp port 68'
 
 مسارات وأوامر Kea قد تختلف حسب distribution/package؛ اختبر syntax ولا تعِد تشغيل الخدمة قبل أخذ نسخة configuration والتحقق من service name.
 
+## Linux: ISC DHCP (Legacy Reference)
+
+مثال مختصر لـ `dhcpd.conf`، مناسب فقط لبيئة legacy/lab. اجعل الخدمة تستمع إلى interface المقصود وفق إعدادات نظام التشغيل، ولا تنسَ أن relay سيجعل الخادم يختار subnet من معلومات relay.
+
+```conf
+authoritative;
+default-lease-time 28800;
+max-lease-time 86400;
+
+subnet 10.10.10.0 netmask 255.255.255.0 {
+  range 10.10.10.50 10.10.10.220;
+  option routers 10.10.10.1;
+  option subnet-mask 255.255.255.0;
+  option domain-name-servers 10.10.100.10, 10.10.100.11;
+  option domain-name "corp.example";
+}
+```
+
+```bash
+sudo dhcpd -t -cf /etc/dhcp/dhcpd.conf
+sudo systemctl status isc-dhcp-server
+sudo journalctl -u isc-dhcp-server -n 100 --no-pager
+```
+
+اسم service وbinary قد يكونان `dhcpd` أو `isc-dhcp-server` حسب distribution. لا تشغّل ISC DHCP وKea على UDP/67 وinterface نفسيهما.
+
+## Windows Server: Reservation and Failover Checks
+
+```powershell
+Add-DhcpServerv4Reservation -ScopeId 10.10.10.0 -IPAddress 10.10.10.60 -ClientId '00-11-22-33-44-55' -Name 'PRINTER-01'
+Get-DhcpServerv4Reservation -ScopeId 10.10.10.0
+Get-DhcpServerv4Failover
+Get-DhcpServerv4FailoverStatistics
+```
+
+تأكد من client identifier الفعلي قبل إنشاء reservation؛ قد لا يكون مجرد MAC بالشكل المتوقع. أنشئ أو غيّر failover فقط وفق نافذة تغيير وخطة recovery مختبرة.
+
 ## Wireshark Display Filters
 
 ```text
@@ -114,3 +151,12 @@ bootp.option.dhcp == 3
 ```
 
 افحص transaction ID، `yiaddr`، Option 54، Option 3/6، `giaddr`، ورسالة ACK/NAK. لا تشارك packet captures تحتوي MACs أو hostnames أو internal addressing خارج القنوات المعتمدة.
+
+لـ DHCPv6 استخدم:
+
+```text
+dhcpv6 || udp.port == 546 || udp.port == 547
+icmpv6.type == 134
+```
+
+اطابق client DUID وIA_NA/IA_PD مع relay-forward/reply ورسائل Router Advertisement؛ gateway الافتراضي مصدره RA، لا DHCPv6.

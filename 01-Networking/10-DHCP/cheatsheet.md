@@ -25,6 +25,18 @@
 
 `1` mask · `3` router/default gateway · `6` DNS · `15` domain suffix · `42` NTP · `51` lease time · `53` message type · `54` server identifier · `66/67` PXE boot · `82` relay information.
 
+## Relay Packet Clues
+
+| Field / option | Use it to prove |
+|---|---|
+| `xid` | الرسائل من نفس DHCP transaction. |
+| `giaddr` | relay/client subnet الذي يختار به server الـ scope. |
+| `yiaddr` | العنوان المعروض أو المؤكد للعميل. |
+| Option 54 | server الذي اختاره client. |
+| Option 82 | مصدر relay/switch information، إذا كان design يستخدمه. |
+
+Discover فقط = client/VLAN/relay path محتمل؛ Request بلا ACK = server decision أو return path؛ ACK مع فشل = options أو policy بعد DHCP.
+
 ## Cisco IOS Quick Reference
 
 ```cisco
@@ -69,3 +81,9 @@ show ip dhcp snooping binding
 ```
 
 Trust only verified uplinks/server-facing ports. Do not trust user ports.
+
+## DHCPv6 CCNA Snapshot
+
+`UDP 546` client · `UDP 547` server · لا broadcast · gateway من Router Advertisement.
+
+`M=1` = stateful address configuration · `O=1` = other configuration available (stateless use case).

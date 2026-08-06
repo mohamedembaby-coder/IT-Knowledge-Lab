@@ -22,6 +22,8 @@
 | Windows server لا يوزع | DHCP service/scope/AD authorization | service state، scope state، Event Viewer | ابدأ الخدمة، فعّل scope، authorize server وفق السياسة. |
 | Offers متعددة أو gateway غريب | rogue DHCP | capture source MAC/IP؛ switch port | اعزل المنفذ وفق incident process، فعّل/راجع snooping. |
 | Renewals تفشل لاحقاً | server/path unavailable عند T1/T2 | timestamps، Request بلا ACK | افحص server availability/firewall/relay والـ redundancy. |
+| Kea/ISC لا يبدأ بعد change | syntax أو permissions أو port 67 مستخدم | config test, journal, listener check | صحح config/ownership؛ لا تشغل خادمين على UDP/67 نفسه. |
+| DHCPv6 reply موجود لكن لا يوجد default route | Router Advertisements غير موجودة/محجوبة | capture: لا ICMPv6 type 134 | افحص RA/IPv6 gateway ACL وM/O flags؛ DHCPv6 لا يوزع gateway. |
 
 ## Focused Checks
 
@@ -46,6 +48,19 @@ Get-WinEvent -LogName System -MaxEvents 100 | Where-Object ProviderName -Match '
 ## Wireshark Analysis | تحليل Wireshark
 
 استخدم `dhcp || bootp` ثم اتبع `xid` نفسه. Discover بلا Offer: افحص VLAN وrelay/service. Offer بلا Request: client policy/NIC أو offer غير مناسب. Request بلا ACK: server رفض/NAK أو path عائد. ACK صحيح مع failure لاحق: راجع options، duplicate detection، ACL، وDNS. احتفظ بالـ timestamp وMAC وVLAN وpacket sequence عند التصعيد، وأخفِ بيانات المؤسسة الحساسة.
+
+في relay scenario، افتح Discover أو Request وتحقق من `giaddr` وOption 82 إن كان مستخدماً؛ يجب أن يقود `giaddr` إلى scope العميل لا subnet الخادم. بعد ACK، افحص Option 1 و3 و6 داخل packet بدلاً من الاعتماد على شاشة client فقط. لـ DHCPv6، اجمع `dhcpv6 || icmpv6.type == 134` وتحقق من RA؛ DHCPv6 لا يعلن default gateway.
+
+## Linux Server Evidence | دليل خادم Linux
+
+```bash
+sudo kea-dhcp4 -t /etc/kea/kea-dhcp4.conf
+sudo journalctl -u kea-dhcp4 -n 150 --no-pager
+sudo dhcpd -t -cf /etc/dhcp/dhcpd.conf
+sudo ss -lunp | grep ':67'
+```
+
+نفّذ فقط الأوامر الملائمة للخدمة المثبتة. تحقق من أن server يستمع للـ interface الصحيح، وأن subnet/range يطابقان `giaddr`، ثم قارِن timestamps بين relay capture والسجل.
 
 ## Escalation Notes | ملاحظات التصعيد
 

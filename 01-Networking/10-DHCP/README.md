@@ -83,6 +83,24 @@ DHCPv4 مبني على BOOTP. الحقول المهمة: `xid` لربط الرس
 - **Cisco IOS DHCP:** مناسب للـ branch/lab أو deployments صغيرة؛ أنشئ excluded addresses و`ip dhcp pool`، واستعمل `ip helper-address` للـ remote server.
 - **Linux (Kea/ISC DHCP):** استخدم خدمة مدارة وملف configuration تحت version control، وافحص syntax قبل restart. Kea هو خيار حديث شائع؛ قد تستخدم بيئات legacy ISC DHCP.
 
+## DHCPv6: CCNA Context | سياق DHCPv6
+
+DHCPv6 ليس DHCPv4 مع عناوين أطول. يستخدم UDP `546` على client و`547` على server، ويعتمد على multicast بدلاً من broadcast. في IPv6 قد يزوّد **SLAAC** العنوان وdefault gateway من Router Advertisements، بينما يوفّر DHCPv6 معلومات إضافية مثل DNS (stateless)، أو يزوّد العنوان نفسه أيضاً (stateful). لا تتوقع أن يقدم DHCPv6 default gateway؛ الـ Router Advertisement هو مصدره.
+
+| Mode | Router Advertisement flags | DHCPv6 role |
+|---|---|---|
+| SLAAC only | `M=0, O=0` | لا DHCPv6؛ العنوان وDNS وفق RA/design. |
+| Stateless DHCPv6 | `M=0, O=1` | SLAAC للعنوان، DHCPv6 للـ other configuration مثل DNS. |
+| Stateful DHCPv6 | `M=1` | DHCPv6 يمنح IPv6 address/options؛ يبقى gateway من RA. |
+
+في CCNA، اربط هذا بالـ relay: IPv4 relay يستخدم `giaddr` عادةً، بينما DHCPv6 relay-forward يحمل relay/link-address لتمييز رابط العميل. راجع ACLs وmulticast والسياسة قبل تفعيل DHCPv6 في شبكة production.
+
+## Capacity, Resilience, and Operations | السعة والمرونة والتشغيل
+
+لا تُقاس صحة DHCP بكون الخدمة running فقط. راقب free addresses ومدة lease وdeclines/conflicts ووقت استجابة DORA وصحة replication/failover. يختلف تصميم التوافر حسب المنتج: Windows DHCP يدعم failover لعلاقات scope محددة (load balance أو hot standby)، وKea يقدم High Availability hook وفق الإصدار والحزمة، بينما ISC DHCP legacy يحتاج تصميم failover وتحققاً دقيقاً من التوافق. لا تخلط نموذج failover لخدمة مع أخرى؛ اتبع documentation لإصدار المنتج المعتمد واختبر partition/recovery في المختبر.
+
+قاعدة عملية: تكون lease أطول للأجهزة الثابتة نسبياً، وأقصر لشبكات guest/rotating devices، لكن لا تقلصها بلا قياس لأن renewals والسجلات والحمل سيرتفعان. احتفظ بسعة نمو واقعية ولا تستخدم توسيع scope لتجاوز overlap أو IPAM غير الموثق.
+
 ## Security: DHCP Snooping and Rogue DHCP
 
 Rogue DHCP server يمكنه إعطاء gateway أو DNS خبيثين ويسبب outage أو interception. فعّل DHCP Snooping في access VLANs، علّم uplinks إلى DHCP server/relay فقط بأنها **trusted**، واترك user ports untrusted ومحدودة rate. يبني السويتش binding database (MAC, IP, VLAN, port, lease) يمكن استخدامه مع Dynamic ARP Inspection وIP Source Guard عند توافق التصميم. اختبر قبل التفعيل: trust خاطئ أو rate limit منخفض قد يقطع DHCP الشرعي.
