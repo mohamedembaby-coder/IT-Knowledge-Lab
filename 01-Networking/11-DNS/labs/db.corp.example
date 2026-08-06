@@ -1,0 +1,15 @@
+$TTL 3600
+@   IN SOA dns01.corp.example. hostmaster.corp.example. (
+        2026080601 ; serial: increment on every change
+        3600       ; refresh
+        900        ; retry
+        1209600    ; expire
+        300 )      ; negative cache TTL
+    IN NS  dns01.corp.example.
+dns01 IN A 10.10.100.10
+app   IN A 10.10.20.50
+mail  IN A 10.10.20.60
+@     IN MX 10 mail.corp.example.
+_sip._tcp IN SRV 10 5 5060 sip.corp.example.
+sip   IN A 10.10.20.70
+policy IN TXT "lab-only DNS record"

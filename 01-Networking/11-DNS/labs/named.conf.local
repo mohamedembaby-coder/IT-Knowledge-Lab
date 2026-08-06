@@ -1,0 +1,11 @@
+zone "corp.example" {
+    type primary;
+    file "/etc/bind/db.corp.example";
+    allow-transfer { none; };
+};
+
+zone "20.10.10.in-addr.arpa" {
+    type primary;
+    file "/etc/bind/db.10.10.20";
+    allow-transfer { none; };
+};

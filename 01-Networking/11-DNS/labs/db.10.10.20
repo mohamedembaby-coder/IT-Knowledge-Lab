@@ -1,0 +1,6 @@
+$TTL 3600
+@   IN SOA dns01.corp.example. hostmaster.corp.example. (
+        2026080601 3600 900 1209600 300 )
+    IN NS dns01.corp.example.
+50  IN PTR app.corp.example.
+60  IN PTR mail.corp.example.
